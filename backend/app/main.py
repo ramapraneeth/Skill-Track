@@ -15,6 +15,8 @@ from app.routers import (
     analytics,
     impact,
     reports,
+    providers,
+    programmes,
 )
 
 @asynccontextmanager
@@ -63,3 +65,5 @@ app.include_router(followups.router, prefix=settings.API_V1_STR)
 app.include_router(analytics.router, prefix=settings.API_V1_STR)
 app.include_router(impact.router, prefix=settings.API_V1_STR)
 app.include_router(reports.router, prefix=settings.API_V1_STR)
+app.include_router(providers.router, prefix=settings.API_V1_STR)
+app.include_router(programmes.router, prefix=settings.API_V1_STR)

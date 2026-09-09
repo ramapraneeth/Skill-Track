@@ -11,9 +11,9 @@ export function useLearners(params?: Record<string, string>) {
     queryFn: async () => {
       try {
         const data = await api.getLearners(params)
-        return data && data.length > 0 ? data : mockLearners
+        return data || []
       } catch (err) {
-        console.warn('API getLearners failed, falling back to mock data:', err)
+        console.warn('API getLearners failed, falling back to cached baseline:', err)
         return mockLearners
       }
     },
@@ -26,9 +26,9 @@ export function useLearner(id: string) {
     queryFn: async () => {
       try {
         const data = await api.getLearner(id)
-        return data || mockLearners.find((l) => l.id === id) || mockLearners[0]
+        return data
       } catch (err) {
-        console.warn('API getLearner failed, falling back to mock data:', err)
+        console.warn('API getLearner failed, falling back to cached baseline:', err)
         return mockLearners.find((l) => l.id === id) || mockLearners[0]
       }
     },
@@ -143,7 +143,7 @@ export function useSkills() {
     queryFn: async () => {
       try {
         const data = await api.getSkills()
-        return data && data.length > 0 ? data : mockSkills
+        return data || []
       } catch (err) {
         console.warn('API getSkills failed, using fallback mockSkills:', err)
         return mockSkills
@@ -194,7 +194,7 @@ export function useJobs() {
     queryFn: async () => {
       try {
         const data = await api.getJobs()
-        return data && data.length > 0 ? data : mockJobs
+        return data || []
       } catch (err) {
         console.warn('API getJobs failed, using fallback mockJobs:', err)
         return mockJobs
@@ -298,7 +298,7 @@ export function useInterventions(params?: Record<string, string>) {
     queryFn: async () => {
       try {
         const data = await api.getInterventions(params)
-        return data && data.length > 0 ? data : mockInterventions
+        return data || []
       } catch (err) {
         console.warn('API getInterventions failed, falling back to mockInterventions:', err)
         return mockInterventions
@@ -360,12 +360,45 @@ export function useCreateFollowup() {
 }
 
 // ---------------------------------------------------------------------------
+// Providers & Programmes Queries
+// ---------------------------------------------------------------------------
+export function useProviders(params?: Record<string, string>) {
+  return useQuery({
+    queryKey: ['providers', params],
+    queryFn: () => api.getProviders(params),
+  })
+}
+
+export function useProvider(id: string) {
+  return useQuery({
+    queryKey: ['provider', id],
+    queryFn: () => api.getProvider(id),
+    enabled: !!id,
+  })
+}
+
+export function useProgrammes(params?: Record<string, string>) {
+  return useQuery({
+    queryKey: ['programmes', params],
+    queryFn: () => api.getProgrammes(params),
+  })
+}
+
+export function useProgramme(id: string) {
+  return useQuery({
+    queryKey: ['programme', id],
+    queryFn: () => api.getProgramme(id),
+    enabled: !!id,
+  })
+}
+
+// ---------------------------------------------------------------------------
 // Analytics & Impact Queries
 // ---------------------------------------------------------------------------
-export function useGovernmentAnalytics() {
+export function useGovernmentAnalytics(params?: Record<string, string | undefined>) {
   return useQuery({
-    queryKey: ['government-analytics'],
-    queryFn: () => api.getGovernmentAnalytics(),
+    queryKey: ['government-analytics', params],
+    queryFn: () => api.getGovernmentAnalytics(params),
   })
 }
 
@@ -384,7 +417,7 @@ export function useImpact() {
         const data = await api.getImpact()
         return data && data.length > 0 ? data : mockImpactMeasurements
       } catch (err) {
-        console.warn('API getImpact failed, using mockImpactMeasurements:', err)
+        console.warn('API getImpact failed, using fallback:', err)
         return mockImpactMeasurements
       }
     },

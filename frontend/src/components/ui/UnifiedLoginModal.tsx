@@ -36,7 +36,7 @@ export const UnifiedLoginModal: React.FC<UnifiedLoginModalProps> = ({ isOpen, on
       badge: 'Candidate Portal',
       demoCreds: {
         email: 'rahul.sharma@skilltrack.in',
-        password: 'demopassword',
+        password: 'demo1234',
       },
     },
     {
@@ -48,7 +48,7 @@ export const UnifiedLoginModal: React.FC<UnifiedLoginModalProps> = ({ isOpen, on
       badge: 'Institution Portal',
       demoCreds: {
         email: 'director@apexskills.org',
-        password: 'demopassword',
+        password: 'demo1234',
       },
     },
     {
@@ -59,8 +59,8 @@ export const UnifiedLoginModal: React.FC<UnifiedLoginModalProps> = ({ isOpen, on
       icon: ShieldCheck,
       badge: 'National Cockpit',
       demoCreds: {
-        email: 'director@msde.gov.in',
-        password: 'demopassword',
+        email: 'admin.msde@gov.in',
+        password: 'demo1234',
       },
     },
   ]

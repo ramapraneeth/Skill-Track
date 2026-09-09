@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useGovernmentAnalytics } from '../../api/queries'
-import { mockGovernmentAnalytics } from '../../data/mockData'
 import { KpiCard } from '../../components/common/KpiCard'
 import { LoadingSkeleton } from '../../components/common/LoadingSkeleton'
 import { ErrorMessage } from '../../components/common/ErrorMessage'
@@ -21,14 +20,18 @@ import {
   Sparkles,
   RefreshCw,
   Filter,
-  TrendingUp,
 } from 'lucide-react'
 
 export const GovernmentDashboard: React.FC = () => {
-  const { data: analyticsData, isLoading, isError, refetch } = useGovernmentAnalytics()
   const [selectedScheme, setSelectedScheme] = useState('All Schemes')
   const [selectedState, setSelectedState] = useState('All States')
   const [selectedSector, setSelectedSector] = useState('All Sectors')
+
+  const { data: analyticsData, isLoading, isError, refetch } = useGovernmentAnalytics({
+    scheme_name: selectedScheme,
+    state: selectedState,
+    sector: selectedSector,
+  })
 
   if (isLoading) {
     return (
@@ -40,8 +43,22 @@ export const GovernmentDashboard: React.FC = () => {
     )
   }
 
-  const data = analyticsData || mockGovernmentAnalytics
-  const { nationalKpis, outcomeFunnel, failureModeBreakdown, geographicHeatmap } = data
+  const defaultKpis = {
+    totalLearners: 0,
+    certifiedLearners: 0,
+    employedLearners: 0,
+    selfEmployedLearners: 0,
+    apprenticeshipLearners: 0,
+    overallPlacementRate: 0,
+    retentionRate90Day: 0,
+    averageMonthlyWage: 0,
+    activeInterventionsCount: 0,
+  }
+
+  const nationalKpis = analyticsData?.nationalKpis || defaultKpis
+  const outcomeFunnel = analyticsData?.outcomeFunnel || []
+  const failureModeBreakdown = analyticsData?.failureModeBreakdown || []
+  const geographicHeatmap = analyticsData?.geographicHeatmap || []
 
   return (
     <div className="space-y-6">
@@ -220,7 +237,7 @@ export const GovernmentDashboard: React.FC = () => {
               Longitudinal Outcome Funnel & Retention Attrition
             </h2>
             <p className="text-xs text-[#52606D] mt-0.5">
-              Tracking 128,450 candidate cohort from enrollment through 6-month career sustainability
+              Tracking {nationalKpis.totalLearners.toLocaleString()} candidate cohort from enrollment through 6-month career sustainability
             </p>
           </div>
           <span className="text-xs font-semibold text-[#059669] bg-[#E8F5E9] px-3 py-1 rounded-md border border-[#C8E6C9] tabular-nums">
@@ -266,7 +283,7 @@ export const GovernmentDashboard: React.FC = () => {
               <h2 className="text-sm font-bold text-[#002541] uppercase tracking-wider">
                 Primary Root Causes for Placement Drop-Off
               </h2>
-              <p className="text-xs text-[#52606D] mt-0.5">Diagnostic failure modes identified across 22,800 unplaced cases</p>
+              <p className="text-xs text-[#52606D] mt-0.5">Diagnostic failure modes identified across unplaced and monitored cases</p>
             </div>
             <span className="rounded-md bg-[#FFEBEE] px-2 py-0.5 text-[11px] font-bold text-[#B3261E] border border-[#FFCDD2]">
               Policy Action Required

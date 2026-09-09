@@ -1,12 +1,12 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import { User, UserRole } from '../types'
-import { mockUsers } from '../data/mockData'
+import { api } from '../api/client'
 
 interface AuthContextType {
   user: User | null
   role: UserRole | null
   token: string | null
-  login: (email: string, passwordOrRole: string, selectedRole?: UserRole) => Promise<void> | void
+  login: (identifier: string, passwordOrRole: string, selectedRole?: UserRole) => Promise<void>
   logout: () => void
   switchRole: (newRole: UserRole) => void
 }
@@ -19,50 +19,87 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   })
 
   const [user, setUser] = useState<User | null>(() => {
-    const savedRole = localStorage.getItem('skilltrack_role') as UserRole
-    return savedRole ? mockUsers[savedRole] : null
+    const savedUser = localStorage.getItem('skilltrack_user')
+    if (savedUser) {
+      try {
+        return JSON.parse(savedUser)
+      } catch {
+        return null
+      }
+    }
+    return null
   })
 
   const [token, setToken] = useState<string | null>(() => {
-    return localStorage.getItem('skilltrack_role') ? 'mock-jwt-token-active' : null
+    return localStorage.getItem('skilltrack_token') || null
   })
 
   useEffect(() => {
-    if (role) {
-      localStorage.setItem('skilltrack_role', role)
-      setUser(mockUsers[role] || null)
-      setToken('mock-jwt-token-active')
-    } else {
-      localStorage.removeItem('skilltrack_role')
+    if (!token) {
       setUser(null)
-      setToken(null)
+      setRole(null)
     }
-  }, [role])
+  }, [token])
 
-  const login = (email: string, passwordOrRole: string, optionalRole?: UserRole) => {
-    let resolvedRole: UserRole = 'learner'
-    if (optionalRole) {
-      resolvedRole = optionalRole
-    } else if (passwordOrRole === 'learner' || passwordOrRole === 'provider' || passwordOrRole === 'government') {
-      resolvedRole = passwordOrRole as UserRole
+  const login = async (identifier: string, passwordOrRole: string, optionalRole?: UserRole) => {
+    // If optionalRole is provided, passwordOrRole is the password
+    const password = optionalRole ? passwordOrRole : 'demo1234'
+    const requestedRole = optionalRole || (passwordOrRole as UserRole)
+
+    // Authenticate with real FastAPI backend
+    const authResult = await api.login({
+      email: identifier,
+      password: password,
+      role: requestedRole,
+    })
+
+    const jwtToken = authResult.access_token
+    const backendUser = authResult.user
+
+    const mappedRole = (
+      backendUser.role === 'provider' || backendUser.role === 'training_provider'
+        ? 'provider'
+        : backendUser.role === 'government' || backendUser.role === 'admin' || backendUser.role === 'administrator'
+        ? 'government'
+        : 'learner'
+    ) as UserRole
+
+    const authenticatedUser: User = {
+      id: backendUser.id,
+      email: backendUser.email,
+      fullName: backendUser.fullName,
+      role: mappedRole,
+      avatarUrl:
+        backendUser.avatarUrl ||
+        'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
     }
-    setRole(resolvedRole)
-    const matchedUser = mockUsers[resolvedRole]
-    setUser(matchedUser ? { ...matchedUser, email } : null)
-    setToken('mock-jwt-token-active')
-    localStorage.setItem('skilltrack_role', resolvedRole)
+
+    setToken(jwtToken)
+    setUser(authenticatedUser)
+    setRole(mappedRole)
+
+    localStorage.setItem('skilltrack_token', jwtToken)
+    localStorage.setItem('skilltrack_role', mappedRole)
+    localStorage.setItem('skilltrack_user', JSON.stringify(authenticatedUser))
   }
 
   const logout = () => {
     setRole(null)
     setUser(null)
     setToken(null)
+    localStorage.removeItem('skilltrack_token')
     localStorage.removeItem('skilltrack_role')
+    localStorage.removeItem('skilltrack_user')
   }
 
   const switchRole = (newRole: UserRole) => {
     setRole(newRole)
-    setUser(mockUsers[newRole] || null)
+    if (user) {
+      const updated = { ...user, role: newRole }
+      setUser(updated)
+      localStorage.setItem('skilltrack_user', JSON.stringify(updated))
+      localStorage.setItem('skilltrack_role', newRole)
+    }
   }
 
   return (

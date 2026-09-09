@@ -28,6 +28,8 @@ class InterventionService:
                 "id": item.id,
                 "learnerId": item.learner_id,
                 "learnerName": learner.full_name if learner else "Learner",
+                "district": learner.district if learner else "National",
+                "state": learner.state if learner else "India",
                 "recommendedBy": item.recommended_by,
                 "category": item.category,
                 "title": item.title,

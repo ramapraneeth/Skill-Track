@@ -1,7 +1,7 @@
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'
 
 export async function fetchApi<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-  const token = localStorage.getItem('skilltrack_token') || 'mock-jwt-token-active'
+  const token = localStorage.getItem('skilltrack_token')
 
   const headers = {
     'Content-Type': 'application/json',
@@ -24,10 +24,14 @@ export async function fetchApi<T>(endpoint: string, options: RequestInit = {}): 
 
 export const api = {
   // Auth
-  login: (email: string, role: string) =>
+  login: (credentials: { email: string; password?: string; role?: string }) =>
     fetchApi<any>('/auth/login', {
       method: 'POST',
-      body: JSON.stringify({ email, password: 'demo1234', role }),
+      body: JSON.stringify({
+        email: credentials.email,
+        password: credentials.password || 'demo1234',
+        role: credentials.role,
+      }),
     }),
   getMe: () => fetchApi<any>('/auth/me'),
 
@@ -128,8 +132,31 @@ export const api = {
       body: JSON.stringify(data),
     }),
 
+  // Providers & Programmes
+  getProviders: (params?: Record<string, string>) => {
+    const query = params ? '?' + new URLSearchParams(params).toString() : ''
+    return fetchApi<any[]>(`/providers${query}`)
+  },
+  getProvider: (id: string) => fetchApi<any>(`/providers/${id}`),
+  getProgrammes: (params?: Record<string, string>) => {
+    const query = params ? '?' + new URLSearchParams(params).toString() : ''
+    return fetchApi<any[]>(`/programmes${query}`)
+  },
+  getProgramme: (id: string) => fetchApi<any>(`/programmes/${id}`),
+
   // Analytics & Impact
-  getGovernmentAnalytics: () => fetchApi<any>('/analytics/government'),
+  getGovernmentAnalytics: (params?: Record<string, string | undefined>) => {
+    const cleanParams: Record<string, string> = {}
+    if (params) {
+      for (const [key, value] of Object.entries(params)) {
+        if (value && !value.includes('All')) {
+          cleanParams[key] = value
+        }
+      }
+    }
+    const query = Object.keys(cleanParams).length ? '?' + new URLSearchParams(cleanParams).toString() : ''
+    return fetchApi<any>(`/analytics/government${query}`)
+  },
   getProviderAnalytics: () => fetchApi<any>('/analytics/providers'),
   getSkillsAnalytics: () => fetchApi<any>('/analytics/skills'),
   getImpact: () => fetchApi<any[]>('/impact'),

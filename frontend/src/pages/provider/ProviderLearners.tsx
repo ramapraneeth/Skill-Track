@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useLearners, useCreateIntervention, useCreateFollowup } from '../../api/queries'
-import { mockProgrammes } from '../../data/mockData'
+import { useLearners, useProgrammes, useCreateIntervention, useCreateFollowup } from '../../api/queries'
 import { StatusBadge } from '../../components/common/StatusBadge'
 import { RiskIndicator } from '../../components/common/RiskIndicator'
 import { InterventionModal } from '../../components/common/InterventionModal'
@@ -18,6 +17,7 @@ export const ProviderLearners: React.FC = () => {
   const [selectedStatus, setSelectedStatus] = useState('all')
 
   const { data: learnersList = [], isLoading, isError, refetch } = useLearners()
+  const { data: programmesList = [] } = useProgrammes()
   const createIntervention = useCreateIntervention()
   const createFollowup = useCreateFollowup()
 
@@ -119,7 +119,7 @@ export const ProviderLearners: React.FC = () => {
               className="h-10 w-full rounded-md border border-[#D1D9E2] py-2 px-3 text-xs text-[#1F2937] focus:border-[#0B3B60] focus:outline-none"
             >
               <option value="all">All Programmes</option>
-              {mockProgrammes.map((p) => (
+              {programmesList.map((p: any) => (
                 <option key={p.id} value={p.id}>
                   {p.title}
                 </option>

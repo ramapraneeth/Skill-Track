@@ -23,21 +23,21 @@ def seed_db():
     Base.metadata.create_all(bind=engine)
     db = SessionLocal()
 
-    # Clear existing data
-    db.query(User).delete()
-    db.query(TrainingProvider).delete()
-    db.query(Programme).delete()
-    db.query(Learner).delete()
-    db.query(Skill).delete()
-    db.query(LearnerSkill).delete()
-    db.query(Job).delete()
+    # Clear existing data in child-to-parent order to respect foreign key constraints
+    db.query(ImpactMeasurement).delete()
+    db.query(Intervention).delete()
+    db.query(Prediction).delete()
+    db.query(Followup).delete()
     db.query(EmploymentOutcome).delete()
     db.query(SelfEmploymentOutcome).delete()
     db.query(ApprenticeshipOutcome).delete()
-    db.query(Followup).delete()
-    db.query(Prediction).delete()
-    db.query(Intervention).delete()
-    db.query(ImpactMeasurement).delete()
+    db.query(LearnerSkill).delete()
+    db.query(Learner).delete()
+    db.query(Job).delete()
+    db.query(Programme).delete()
+    db.query(Skill).delete()
+    db.query(TrainingProvider).delete()
+    db.query(User).delete()
     db.commit()
 
     print("Seeding Users...")
@@ -517,6 +517,112 @@ def seed_db():
         )
         db.add(l)
 
+        # Seed relational outcome records matching learner's status
+        if status == "placed":
+            db.add(EmploymentOutcome(
+                id=f"emp-{lid}",
+                learner_id=lid,
+                job_id="job-1" if "Delhi" in state or "Maharashtra" in state else "job-2",
+                employer_name="Tata Consultancy Services" if match > 90 else "Delhivery Logistics",
+                designation="Junior Operations Executive" if "logistics" in prog or match <= 85 else "Data Analytics Associate",
+                sector="IT-ITeS" if match > 85 else "Logistics",
+                district=dist,
+                state=state,
+                monthly_salary=salary,
+                start_date="2024-04-01",
+                status="active",
+                verified=True,
+            ))
+            db.add(Followup(
+                id=f"fl-{lid}-30",
+                learner_id=lid,
+                milestone="30_day",
+                followup_date="2024-05-01",
+                employment_status="retained",
+                current_salary=salary,
+                retention_status="retained",
+                job_satisfaction_score=4 if match > 80 else 3,
+                skill_relevance_score=5 if match > 85 else 4,
+                notes="Verified employment retention at 30-day checkpoint via pay slip.",
+                surveyor_role="provider",
+            ))
+            if int(lid.split("-")[1]) % 2 == 0:
+                db.add(Followup(
+                    id=f"fl-{lid}-90",
+                    learner_id=lid,
+                    milestone="90_day",
+                    followup_date="2024-07-01",
+                    employment_status="retained",
+                    current_salary=salary + 1500,
+                    retention_status="retained",
+                    job_satisfaction_score=5,
+                    skill_relevance_score=5,
+                    notes="Verified sustainable 90-day retention with wage progression.",
+                    surveyor_role="call_center",
+                ))
+        elif status == "self_employed":
+            db.add(SelfEmploymentOutcome(
+                id=f"self-{lid}",
+                learner_id=lid,
+                enterprise_name=f"{name}'s Micro Enterprise",
+                sector="Handicrafts & Green Energy",
+                district=dist,
+                state=state,
+                monthly_revenue=salary,
+                start_date="2024-03-01",
+                microfinance_support=True,
+            ))
+        elif status == "apprenticeship":
+            db.add(ApprenticeshipOutcome(
+                id=f"app-{lid}",
+                learner_id=lid,
+                establishment_name="Schneider Electric Manufacturing Center",
+                sector="Electronics & Solar",
+                stipend_amount=salary,
+                start_date="2024-02-15",
+                duration_months=12,
+                contract_number=f"NAPS-2024-{lid.upper()}",
+            ))
+        elif status in ["seeking_job", "certified"]:
+            # Seed diagnostic risk predictions for unplaced learners
+            reasons_map = {
+                "learner-12": ["Skill Mismatch (Missing Tools/Software)", "Low Interview & Communication Readiness"],
+                "learner-13": ["Low Interview & Communication Readiness"],
+                "learner-18": ["Commute & Location Mismatch", "Skill Mismatch (Missing Tools/Software)"],
+                "learner-20": ["Salary Expectation vs Minimum Living Wage"],
+                "learner-25": ["Personal / Domestic Family Commitments"],
+                "learner-30": ["Skill Mismatch (Missing Tools/Software)"],
+            }
+            factors = reasons_map.get(lid, ["Skill Mismatch (Missing Tools/Software)"])
+            db.add(Prediction(
+                id=f"pred-{lid}",
+                learner_id=lid,
+                prediction_type="placement",
+                probability=0.35 if risk == "High" else 0.62,
+                risk_level=risk,
+                positive_factors=["Completed Certified Coursework", "Documented Attendance > 85%"],
+                risk_factors=factors,
+                model_version="XGBoost-Explainable-v2.1",
+                recommended_interventions=["upskilling", "mock_interview"] if risk == "High" else ["job_matching"],
+            ))
+
+    # Add 6-month followups for cohort retention verification
+    for lid_num in [2, 6, 8, 9, 14, 15, 17, 19, 21, 22, 24, 29]:
+        lid = f"learner-{lid_num}"
+        db.add(Followup(
+            id=f"fl-{lid}-6m",
+            learner_id=lid,
+            milestone="6_month",
+            followup_date="2024-10-01",
+            employment_status="retained",
+            current_salary=22500,
+            retention_status="retained",
+            job_satisfaction_score=5,
+            skill_relevance_score=5,
+            notes="Longitudinal 6-month career milestone verified with positive salary growth.",
+            surveyor_role="call_center",
+        ))
+
     print("Seeding Impact Measurements...")
     impacts = [
         ImpactMeasurement(
@@ -563,6 +669,21 @@ def seed_db():
             sample_size=650,
             evaluation_method="before_after_cohort",
             notes="Longitudinal follow-ups at 30/60/90 days triggered early retention interventions with local logistics employers.",
+        ),
+        ImpactMeasurement(
+            id="imp-4",
+            entity_type="intervention_type",
+            entity_title="Technical Upskilling Bootcamps vs Standard Curriculum",
+            period="FY 2024 Q1-Q2",
+            baseline_placement_rate=48.5,
+            post_placement_rate=71.0,
+            baseline_retention_rate=58.0,
+            post_retention_rate=80.5,
+            baseline_avg_wage=14500,
+            post_avg_wage=20200,
+            sample_size=240,
+            evaluation_method="before_after_cohort",
+            notes="Targeted 14-day bootcamps in deficit technologies lifted both absorption rate and starting wage by over ₹5,700/mo.",
         ),
     ]
     db.add_all(impacts)

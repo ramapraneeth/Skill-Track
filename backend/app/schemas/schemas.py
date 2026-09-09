@@ -290,6 +290,8 @@ class InterventionOut(BaseModel):
     id: str
     learnerId: str
     learnerName: Optional[str] = None
+    district: Optional[str] = None
+    state: Optional[str] = None
     recommendedBy: str
     category: str
     title: str

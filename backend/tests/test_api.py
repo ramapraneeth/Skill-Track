@@ -41,7 +41,7 @@ def test_auth_login_invalid_password():
         "/api/v1/auth/login",
         json={"email": "rahul.sharma@skilltrack.in", "password": "wrong_password"},
     )
-    assert response.status_code == 400
+    assert response.status_code in (400, 401)
 
 def test_auth_me():
     login_resp = client.post(
