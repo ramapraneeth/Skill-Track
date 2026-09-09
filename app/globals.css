@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --gov-blue: #0B3B60;
+  --gov-navy: #002541;
+  --gov-teal: #006876;
+  --gov-orange: #E65100;
+  --gov-border: #D1D9E2;
+  --gov-bg: #F8FAFC;
+}
+
+body {
+  background-color: var(--gov-bg);
+  color: #102A43;
+  font-family: 'Public Sans', system-ui, -apple-system, sans-serif;
+  font-feature-settings: 'tnum' on, 'lnum' on;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Tabular numbers for all financial & percentage data */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
