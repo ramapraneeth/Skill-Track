@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# Builds
+dist/
+build/
+*.egg-info/
+.tmp/
+
+# Local databases & logs
+*.db
+*.sqlite
+*.sqlite3
+*.log
+
+# Environment files
+.env
+.env.local
+
+# IDE & Testing
+.vscode/
+.idea/
+*.swp
+.pytest_cache/
+
