@@ -7,7 +7,7 @@ export class IndicatorService {
       orderBy: { total_enrolled: 'desc' },
     });
 
-    return programmes.map((p) => {
+    return programmes.map((p: any) => {
       const certificationRate = p.completed_count && p.completed_count > 0 ? Math.round(((p.certified_count || 0) / p.completed_count) * 100) : 0;
       const placementRate = p.certified_count && p.certified_count > 0 ? Math.round(((p.placed_count || 0) / p.certified_count) * 100) : 0;
 
@@ -30,7 +30,7 @@ export class IndicatorService {
       orderBy: { overall_placement_rate: 'desc' },
     });
 
-    return providers.map((tp) => ({
+    return providers.map((tp: any) => ({
       id: tp.id,
       code: tp.code,
       name: tp.name,

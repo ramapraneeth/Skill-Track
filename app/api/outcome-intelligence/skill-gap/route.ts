@@ -52,7 +52,7 @@ export async function GET(req: NextRequest) {
       { skillId: 'sk-6', skillName: 'Git Version Control', importance: 'preferred', minProficiency: 'basic', weight: 2 },
     ];
 
-    const learnerSkills = learner.learner_skills.map((s) => ({
+    const learnerSkills = learner.learner_skills.map((s: any) => ({
       skillId: s.skill_id,
       skillName: s.skill_name,
       proficiencyLevel: (s.proficiency_level as any) || 'intermediate',

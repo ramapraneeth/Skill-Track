@@ -12,7 +12,7 @@ export class InsightService {
       orderBy: { probability: 'desc' },
     });
 
-    return predictions.map((p) => ({
+    return predictions.map((p: any) => ({
       id: p.id,
       learnerId: p.learner_id,
       predictionType: p.prediction_type as any,
@@ -39,7 +39,7 @@ export class InsightService {
       orderBy: { created_at: 'desc' },
     });
 
-    return interventions.map((i) => ({
+    return interventions.map((i: any) => ({
       id: i.id,
       learnerId: i.learner_id,
       recommendedBy: i.recommended_by,

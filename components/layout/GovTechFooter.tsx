@@ -15,7 +15,7 @@ export const GovTechFooter: React.FC = () => {
               <span className="font-bold text-white text-sm">SkillTrack National Outcome Platform</span>
             </div>
             <p className="text-[#9FB3C8] max-w-md leading-relaxed text-xs">
-              Smart India Hackathon (SIH) Solution for Longitudinal Skilling Outcome Intelligence, Tracking, and Impact Measurement across national and state skilling initiatives.
+              National Digital Platform for Longitudinal Skilling Outcome Intelligence, Tracking, and Impact Measurement across national and state skilling initiatives.
             </p>
           </div>
 
@@ -42,7 +42,7 @@ export const GovTechFooter: React.FC = () => {
         </div>
 
         <div className="pt-6 border-t border-[#0B3B60]/60 flex flex-col sm:flex-row items-center justify-between text-[#627D98] text-[11px]">
-          <div>SkillTrack — Smart India Hackathon Outcome Intelligence Edition</div>
+          <div>SkillTrack — National Outcome Intelligence Edition</div>
           <div className="mt-2 sm:mt-0 font-medium">Core Positioning: SkillTrack measures what happens after skilling.</div>
         </div>
       </div>
