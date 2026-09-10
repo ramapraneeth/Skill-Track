@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard,
   Award,
@@ -16,6 +16,13 @@ import {
   FileText,
   Activity,
   LogOut,
+  GraduationCap,
+  BookOpen,
+  Briefcase,
+  Scale,
+  Sparkles,
+  Shield,
+  Zap,
 } from 'lucide-react';
 import clsx from 'clsx';
 import { UserRole } from '@/types/auth';
@@ -25,36 +32,127 @@ interface SidebarProps {
   onLogout?: () => void;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ role = 'government', onLogout }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ role = 'student', onLogout }) => {
   const pathname = usePathname();
+  const router = useRouter();
 
-  const navItems = [
-    // Outcome Intelligence Hub Section
-    {
-      group: 'Outcome Intelligence Hub',
-      items: [
-        { label: 'Executive Overview', href: '/outcome-intelligence', icon: Activity },
-        { label: 'Longitudinal Outcomes', href: '/outcome-intelligence/outcomes', icon: Award },
-        { label: 'Milestone Evidence', href: '/outcome-intelligence/evidence', icon: FileCheck },
-        { label: 'National Analytics', href: '/outcome-intelligence/analytics', icon: TrendingUp },
-        { label: 'Explainable Insights', href: '/outcome-intelligence/insights', icon: Compass },
-      ],
-    },
-    // Institutional Cockpit Section
-    {
-      group: 'Institutional Cockpits',
-      items: [
-        { label: 'Government Dashboard', href: '/government/dashboard', icon: LayoutDashboard },
-        { label: 'Learner Cockpit', href: '/learner/dashboard', icon: Users },
-        { label: 'Provider Portal', href: '/provider/dashboard', icon: Building2 },
-      ],
-    },
-  ];
+  const handleRoleQuickSwitch = (targetRole: UserRole) => {
+    let targetUser: any = null;
+    let targetPath = '/';
+
+    if (targetRole === 'student') {
+      targetUser = {
+        id: 'usr-std-101',
+        studentId: 'std-101',
+        fullName: 'Rahul Sharma',
+        email: 'rahul.sharma@skillbridge.gov.in',
+        role: 'student',
+        organization: 'Andhra University',
+      };
+      targetPath = '/student/dashboard';
+    } else if (targetRole === 'trainer') {
+      targetUser = {
+        id: 'usr-trn-201',
+        trainerId: 'trn-201',
+        fullName: 'Prof. Rajesh Nair',
+        email: 'rajesh.nair@skillbridge.gov.in',
+        role: 'trainer',
+        organization: 'Apex National Skilling Academy',
+      };
+      targetPath = '/trainer/dashboard';
+    } else {
+      targetUser = {
+        id: 'usr-gov-001',
+        fullName: 'Dr. Rajiv Kumar',
+        email: 'director.msde@skillbridge.gov.in',
+        role: 'government',
+        organization: 'MSDE Government of India',
+      };
+      targetPath = '/government/dashboard';
+    }
+
+    localStorage.setItem('skilltrack_user', JSON.stringify(targetUser));
+    localStorage.setItem('skilltrack_role', targetRole);
+    router.push(targetPath);
+    window.location.reload();
+  };
+
+  // Build role-tailored navigation groups
+  const getNavGroups = () => {
+    const isStudent = role === 'student' || role === 'learner';
+    const isTrainer = role === 'trainer' || role === 'provider';
+
+    if (isStudent) {
+      return [
+        {
+          group: 'Student Career GPS',
+          items: [
+            { label: 'My Cockpit', href: '/student/dashboard', icon: LayoutDashboard },
+            { label: 'My Skill Gap (4-Tier)', href: '/student/skill-gap', icon: Target },
+            { label: 'Recommended Courses', href: '/student/courses', icon: BookOpen },
+            { label: 'Placement Journey', href: '/student/placement', icon: Compass },
+          ],
+        },
+        {
+          group: 'National Course Registry',
+          items: [
+            { label: 'Course Intelligence', href: '/courses/intelligence', icon: Award },
+            { label: 'Outcome Intelligence Hub', href: '/outcome-intelligence', icon: Activity },
+          ],
+        },
+      ];
+    }
+
+    if (isTrainer) {
+      return [
+        {
+          group: 'Trainer Cohort Oversight',
+          items: [
+            { label: 'Trainer Dashboard', href: '/trainer/dashboard', icon: LayoutDashboard },
+            { label: 'Course Intelligence', href: '/courses/intelligence', icon: BookOpen },
+            { label: 'Curriculum Compare', href: '/courses/compare', icon: Scale },
+          ],
+        },
+        {
+          group: 'National Skilling Hub',
+          items: [
+            { label: 'Outcome Intelligence', href: '/outcome-intelligence', icon: Activity },
+            { label: 'Milestone Evidence', href: '/outcome-intelligence/evidence', icon: FileCheck },
+          ],
+        },
+      ];
+    }
+
+    // Default: Government & Administrator
+    return [
+      {
+        group: 'National Intelligence Telemetry',
+        items: [
+          { label: 'Government Cockpit', href: '/government/dashboard', icon: Shield },
+          { label: 'Course Intelligence Database', href: '/courses/intelligence', icon: BookOpen },
+          { label: 'Course Comparison Matrix', href: '/courses/compare', icon: Scale },
+          { label: 'National Analytics', href: '/outcome-intelligence/analytics', icon: TrendingUp },
+          { label: 'Longitudinal Outcome Ledger', href: '/outcome-intelligence/outcomes', icon: Award },
+          { label: 'Milestone Evidence Audits', href: '/outcome-intelligence/evidence', icon: FileCheck },
+          { label: 'Explainable AI Insights', href: '/outcome-intelligence/insights', icon: Compass },
+        ],
+      },
+      {
+        group: 'Persona Previews',
+        items: [
+          { label: 'Candidate Experience View', href: '/student/dashboard', icon: GraduationCap },
+          { label: 'Trainer Cohort View', href: '/trainer/dashboard', icon: Briefcase },
+        ],
+      },
+    ];
+  };
+
+  const navGroups = getNavGroups();
 
   return (
     <aside className="w-64 bg-white border-r border-[#D1D9E2] flex flex-col justify-between shrink-0 min-h-[calc(100vh-4rem)]">
       <div className="p-4 space-y-6">
-        {navItems.map((group, idx) => (
+        {navGroups.map((group, idx) => (
           <div key={idx}>
             <div className="text-[10px] font-bold text-[#627D98] uppercase tracking-wider px-3 mb-2">
               {group.group}
@@ -84,19 +182,59 @@ export const Sidebar: React.FC<SidebarProps> = ({ role = 'government', onLogout 
         ))}
       </div>
 
-      <div className="p-4 border-t border-[#E2E8F0]">
-        <div className="bg-[#F8FAFC] border border-[#D1D9E2] rounded p-3 text-xs mb-3">
-          <div className="text-[11px] font-semibold text-[#627D98]">Platform Status</div>
-          <div className="flex items-center gap-1.5 mt-1 text-emerald-700 font-bold text-[11px]">
+      {/* Role Quick Switcher in Sidebar Footer */}
+      <div className="p-4 border-t border-[#E2E8F0] space-y-3">
+        <div>
+          <div className="text-[10px] font-bold uppercase tracking-wider text-[#64748B] mb-1.5 flex items-center justify-between">
+            <span>Switch Role Persona</span>
+            <span className="text-emerald-700 text-[9px] font-bold">1-Click</span>
+          </div>
+          <div className="grid grid-cols-3 gap-1 text-[10px]">
+            <button
+              onClick={() => handleRoleQuickSwitch('student')}
+              className={`py-1 px-1.5 rounded border text-center font-bold transition-all ${
+                role === 'student' || role === 'learner'
+                  ? 'bg-[#0B3B60] text-white border-[#0B3B60]'
+                  : 'bg-[#F8FAFC] hover:bg-[#E2E8F0] text-[#334E68] border-[#CBD5E1]'
+              }`}
+            >
+              Student
+            </button>
+            <button
+              onClick={() => handleRoleQuickSwitch('trainer')}
+              className={`py-1 px-1.5 rounded border text-center font-bold transition-all ${
+                role === 'trainer' || role === 'provider'
+                  ? 'bg-[#0B3B60] text-white border-[#0B3B60]'
+                  : 'bg-[#F8FAFC] hover:bg-[#E2E8F0] text-[#334E68] border-[#CBD5E1]'
+              }`}
+            >
+              Trainer
+            </button>
+            <button
+              onClick={() => handleRoleQuickSwitch('government')}
+              className={`py-1 px-1.5 rounded border text-center font-bold transition-all ${
+                role === 'government' || role === 'admin'
+                  ? 'bg-[#0B3B60] text-white border-[#0B3B60]'
+                  : 'bg-[#F8FAFC] hover:bg-[#E2E8F0] text-[#334E68] border-[#CBD5E1]'
+              }`}
+            >
+              Gov Admin
+            </button>
+          </div>
+        </div>
+
+        <div className="bg-[#F8FAFC] border border-[#D1D9E2] rounded p-2.5 text-xs">
+          <div className="text-[10px] font-semibold text-[#627D98]">Platform Status</div>
+          <div className="flex items-center gap-1.5 mt-0.5 text-emerald-700 font-bold text-[11px]">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span>Neon PostgreSQL Live</span>
+            <span>Telemetry Engine Live</span>
           </div>
         </div>
 
         {onLogout && (
           <button
             onClick={onLogout}
-            className="w-full h-9 rounded text-xs font-semibold text-rose-700 hover:bg-rose-50 border border-rose-200 transition-colors flex items-center justify-center gap-2"
+            className="w-full h-8 rounded text-xs font-semibold text-rose-700 hover:bg-rose-50 border border-rose-200 transition-colors flex items-center justify-center gap-2"
           >
             <LogOut className="w-3.5 h-3.5" />
             <span>Sign Out Session</span>

@@ -13,7 +13,7 @@ export class EvidenceService {
       orderBy: { followup_date: 'desc' },
     });
 
-    return records.map((r) => ({
+    return records.map((r: any) => ({
       id: r.id,
       learnerId: r.learner_id,
       milestone: r.milestone as any,

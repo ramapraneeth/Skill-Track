@@ -23,3 +23,12 @@ body {
 .tabular-nums {
   font-variant-numeric: tabular-nums;
 }
+
+/* Completely suppress any Next.js floating dev indicator/widget */
+nextjs-portal,
+[data-nextjs-toast],
+[data-nextjs-dialog-overlay] {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}

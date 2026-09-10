@@ -54,7 +54,7 @@ export class OutcomeService {
       orderBy: { created_at: 'desc' },
     });
 
-    return records.map((r) => ({
+    return records.map((r: any) => ({
       id: r.id,
       learnerId: r.learner_id,
       jobId: r.job_id,
@@ -128,7 +128,7 @@ export class OutcomeService {
       orderBy: { created_at: 'desc' },
     });
 
-    return records.map((r) => ({
+    return records.map((r: any) => ({
       id: r.id,
       learnerId: r.learner_id,
       enterpriseName: r.enterprise_name,
@@ -152,7 +152,7 @@ export class OutcomeService {
       orderBy: { created_at: 'desc' },
     });
 
-    return records.map((r) => ({
+    return records.map((r: any) => ({
       id: r.id,
       learnerId: r.learner_id,
       establishmentName: r.establishment_name,

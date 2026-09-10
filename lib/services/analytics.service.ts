@@ -30,22 +30,22 @@ export class AnalyticsService {
 
     // Counts across statuses
     const completedCount = learners.filter(
-      (l) => l.current_status !== 'enrolled'
+      (l: any) => l.current_status !== 'enrolled'
     ).length;
 
     const certifiedCount = learners.filter(
-      (l) =>
+      (l: any) =>
         ['certified', 'seeking_job', 'placed', 'self_employed', 'apprenticeship', 'attrited'].includes(
           l.current_status || ''
         )
     ).length;
 
     const placedCount = learners.filter(
-      (l) => ['placed', 'self_employed', 'apprenticeship'].includes(l.current_status || '')
+      (l: any) => ['placed', 'self_employed', 'apprenticeship'].includes(l.current_status || '')
     ).length;
 
     // Longitudinal followups for these learners
-    const learnerIds = learners.map((l) => l.id);
+    const learnerIds = learners.map((l: any) => l.id);
     const followups90d = await prisma.followups.findMany({
       where: {
         learner_id: { in: learnerIds },
@@ -54,7 +54,7 @@ export class AnalyticsService {
     });
 
     const retentionCohortTracked = followups90d.length;
-    const retainedCount = followups90d.filter((f) => f.retention_status === 'retained').length;
+    const retainedCount = followups90d.filter((f: any) => f.retention_status === 'retained').length;
 
     const certificationRate =
       completedCount > 0 ? Number(((certifiedCount / completedCount) * 100).toFixed(1)) : 0;
@@ -67,16 +67,16 @@ export class AnalyticsService {
 
     // Average starting wage from placed learners
     const salaries = learners
-      .filter((l) => (l.current_salary || 0) > 0)
-      .map((l) => l.current_salary || 0);
+      .filter((l: any) => (l.current_salary || 0) > 0)
+      .map((l: any) => l.current_salary || 0);
 
     const averageStartingWage =
-      salaries.length > 0 ? Math.round(salaries.reduce((a, b) => a + b, 0) / salaries.length) : 0;
+      salaries.length > 0 ? Math.round(salaries.reduce((a: number, b: number) => a + b, 0) / salaries.length) : 0;
 
     // Average skill match rate
-    const skillMatches = learners.map((l) => l.skill_match_pct || 70);
+    const skillMatches = learners.map((l: any) => l.skill_match_pct || 70);
     const skillMatchRate =
-      skillMatches.length > 0 ? Math.round(skillMatches.reduce((a, b) => a + b, 0) / skillMatches.length) : 70;
+      skillMatches.length > 0 ? Math.round(skillMatches.reduce((a: number, b: number) => a + b, 0) / skillMatches.length) : 70;
 
     // 5-Stage Longitudinal Funnel
     const funnel = [
@@ -151,8 +151,8 @@ export class AnalyticsService {
     ];
 
     // State Breakdown
-    const stateGroups = new Map<string, typeof learners>();
-    learners.forEach((l) => {
+    const stateGroups = new Map<string, any[]>();
+    learners.forEach((l: any) => {
       const st = l.state || 'Other';
       if (!stateGroups.has(st)) stateGroups.set(st, []);
       stateGroups.get(st)!.push(l);
@@ -160,10 +160,10 @@ export class AnalyticsService {
 
     const stateBreakdown = Array.from(stateGroups.entries()).map(([st, stLearners]) => {
       const stTotal = stLearners.length;
-      const stPlaced = stLearners.filter((l) =>
+      const stPlaced = stLearners.filter((l: any) =>
         ['placed', 'self_employed', 'apprenticeship'].includes(l.current_status || '')
       ).length;
-      const stSalaries = stLearners.filter((l) => (l.current_salary || 0) > 0).map((l) => l.current_salary || 0);
+      const stSalaries = stLearners.filter((l: any) => (l.current_salary || 0) > 0).map((l: any) => l.current_salary || 0);
 
       return {
         state: st,
@@ -171,7 +171,7 @@ export class AnalyticsService {
         placed: stPlaced,
         placementRate: stTotal > 0 ? Number(((stPlaced / stTotal) * 100).toFixed(1)) : 0,
         retentionRate: 85,
-        avgWage: stSalaries.length > 0 ? Math.round(stSalaries.reduce((a, b) => a + b, 0) / stSalaries.length) : 18500,
+        avgWage: stSalaries.length > 0 ? Math.round(stSalaries.reduce((a: number, b: number) => a + b, 0) / stSalaries.length) : 18500,
       };
     });
 

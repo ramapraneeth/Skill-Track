@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'SkillTrack — Longitudinal Skilling Outcome Intelligence Platform',
-  description: 'National Longitudinal Outcome Intelligence & Impact Measurement Platform for Skill Ecosystems',
+  title: 'SKILLBRIDGE AI — Connecting Skills, Education, Industry and Employment',
+  description: 'National Digital Skill Intelligence Platform connecting Students, Trainers, Courses, Skills, Certifications, and Employment Outcomes',
 };
 
 export default function RootLayout({
