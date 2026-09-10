@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Search, Sun, Moon, Bell } from 'lucide-react';
+import { usePathname } from 'next/navigation';
+import { Search, Sun, Moon, Bell, ChevronRight } from 'lucide-react';
 import { GlobalSearchModal } from '@/components/ui/GlobalSearchModal';
 
 interface PortalTopbarProps {
@@ -11,6 +12,7 @@ interface PortalTopbarProps {
 }
 
 export const PortalTopbar: React.FC<PortalTopbarProps> = ({ user, onLogout }) => {
+  const pathname = usePathname() || '';
   const [showNotifications, setShowNotifications] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -18,6 +20,38 @@ export const PortalTopbar: React.FC<PortalTopbarProps> = ({ user, onLogout }) =>
     name: 'Rahul Sharma',
     role: 'LEARNER',
   });
+
+  const getBreadcrumbs = () => {
+    if (pathname.startsWith('/trainer/dashboard')) return { portal: 'Trainer Portal', page: 'Dashboard' };
+    if (pathname.startsWith('/trainer/batches')) return { portal: 'Trainer Portal', page: 'Training Batches' };
+    if (pathname.startsWith('/trainer/learners')) return { portal: 'Trainer Portal', page: 'My Students' };
+    if (pathname.startsWith('/trainer/attendance')) return { portal: 'Trainer Portal', page: 'Daily Attendance' };
+    if (pathname.startsWith('/trainer/courses')) return { portal: 'Trainer Portal', page: 'Courses & Syllabus' };
+    if (pathname.startsWith('/trainer/progress')) return { portal: 'Trainer Portal', page: 'Curriculum Progress' };
+    if (pathname.startsWith('/trainer/schedule')) return { portal: 'Trainer Portal', page: 'Class Schedule' };
+    if (pathname.startsWith('/trainer/assessments')) return { portal: 'Trainer Portal', page: 'Assessments' };
+    if (pathname.startsWith('/trainer/analytics')) return { portal: 'Trainer Portal', page: 'Instruction Analytics' };
+    if (pathname.startsWith('/trainer/profile')) return { portal: 'Trainer Portal', page: 'My Profile & ToT' };
+    if (pathname.startsWith('/trainer')) return { portal: 'Trainer Portal', page: 'Console' };
+
+    if (pathname.startsWith('/government/dashboard')) return { portal: 'Government Portal', page: 'National Intelligence' };
+    if (pathname.startsWith('/government/training-centers')) return { portal: 'Government Portal', page: 'Training Capacity' };
+    if (pathname.startsWith('/government/learners')) return { portal: 'Government Portal', page: 'Candidate Registry' };
+    if (pathname.startsWith('/government/trainers')) return { portal: 'Government Portal', page: 'Trainer Registry' };
+    if (pathname.startsWith('/government/reports')) return { portal: 'Government Portal', page: 'Statutory Reports' };
+    if (pathname.startsWith('/government')) return { portal: 'Government Portal', page: 'Executive Radar' };
+
+    if (pathname.startsWith('/learner/dashboard')) return { portal: 'Learner Portal', page: 'Dashboard' };
+    if (pathname.startsWith('/learner/skills')) return { portal: 'Learner Portal', page: 'Skills & Proficiency' };
+    if (pathname.startsWith('/learner/profile')) return { portal: 'Learner Portal', page: 'My Profile' };
+    if (pathname.startsWith('/learner/courses')) return { portal: 'Learner Portal', page: 'Courses & Outcomes' };
+    if (pathname.startsWith('/learner/opportunities')) return { portal: 'Learner Portal', page: 'Jobs & Openings' };
+    if (pathname.startsWith('/learner')) return { portal: 'Learner Portal', page: 'Career Cockpit' };
+
+    return null;
+  };
+
+  const breadcrumb = getBreadcrumbs();
 
   useEffect(() => {
     // Check initial dark mode from localStorage or class
@@ -73,24 +107,34 @@ export const PortalTopbar: React.FC<PortalTopbarProps> = ({ user, onLogout }) =>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-14">
             {/* Brand & Platform Identity */}
-            <Link href="/" className="flex items-center gap-2.5 group shrink-0">
-              <div className="w-8 h-8 rounded-md bg-[#1D4ED8] flex items-center justify-center text-white font-black text-xs shadow-xs">
-                SB
-              </div>
-              <div>
-                <div className="flex items-center gap-1.5">
-                  <span className="font-extrabold text-[#0B192C] dark:text-white text-sm tracking-tight group-hover:text-[#1D4ED8] transition-colors">
-                    SKILL BRIDGE AI
-                  </span>
-                  <span className="bg-blue-100 text-[#1D4ED8] dark:bg-blue-950 dark:text-blue-300 text-[9px] font-bold px-1.5 py-0.2 rounded uppercase tracking-wider">
-                    SIH 2026
-                  </span>
+            <div className="flex items-center gap-4 shrink-0">
+              <Link href="/" className="flex items-center gap-2.5 group">
+                <div className="w-8 h-8 rounded-md bg-[#1D4ED8] flex items-center justify-center text-white font-black text-xs shadow-xs">
+                  SB
                 </div>
-                <p className="text-[10px] text-slate-500 dark:text-slate-400 hidden sm:block font-normal leading-none mt-0.5">
-                  Connecting Skills, Education, Industry and Employment
-                </p>
-              </div>
-            </Link>
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-extrabold text-[#0B192C] dark:text-white text-sm tracking-tight group-hover:text-[#1D4ED8] transition-colors">
+                      SKILL BRIDGE AI
+                    </span>
+                    <span className="bg-blue-100 text-[#1D4ED8] dark:bg-blue-950 dark:text-blue-300 text-[9px] font-bold px-1.5 py-0.2 rounded uppercase tracking-wider">
+                      SIH 2026
+                    </span>
+                  </div>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 hidden lg:block font-normal leading-none mt-0.5">
+                    Connecting Skills, Education, Industry and Employment
+                  </p>
+                </div>
+              </Link>
+
+              {breadcrumb && (
+                <div className="hidden xl:flex items-center gap-1.5 pl-3 border-l border-slate-200 dark:border-slate-800 text-xs">
+                  <span className="text-slate-400 dark:text-slate-500 font-medium">{breadcrumb.portal}</span>
+                  <ChevronRight className="w-3.5 h-3.5 text-slate-300 dark:text-slate-600" />
+                  <span className="font-bold text-slate-800 dark:text-slate-200">{breadcrumb.page}</span>
+                </div>
+              )}
+            </div>
 
             {/* Global Search Bar (Trigger) */}
             <div className="hidden md:flex flex-1 max-w-md mx-6">

@@ -9,20 +9,21 @@ import {
   SkillProficiencyLevel,
   SkillCategory,
   StudentSkill,
+  LearnerProfile,
 } from '@/lib/sidh-store';
 
 export default function SkillsProficiencyPage() {
-  const targetTechnical = [
-    { name: 'SQL', category: 'Technical Skills' as const, proficiencyLevel: 'Intermediate' as SkillProficiencyLevel, proficiency: 70, verified: true },
-    { name: 'REST APIs', category: 'Technical Skills' as const, proficiencyLevel: 'Beginner' as SkillProficiencyLevel, proficiency: 40, verified: false },
-    { name: 'HTML5 & CSS3', category: 'Technical Skills' as const, proficiencyLevel: 'Advanced' as SkillProficiencyLevel, proficiency: 92, verified: true },
-    { name: 'React.js', category: 'Technical Skills' as const, proficiencyLevel: 'Intermediate' as SkillProficiencyLevel, proficiency: 70, verified: true },
+  const targetTechnical: StudentSkill[] = [
+    { name: 'SQL', category: 'Technical Skills', proficiencyLevel: 'Intermediate' as SkillProficiencyLevel, proficiency: 70, verified: true },
+    { name: 'REST APIs', category: 'Technical Skills', proficiencyLevel: 'Beginner' as SkillProficiencyLevel, proficiency: 40, verified: false },
+    { name: 'HTML5 & CSS3', category: 'Technical Skills', proficiencyLevel: 'Advanced' as SkillProficiencyLevel, proficiency: 92, verified: true },
+    { name: 'React.js', category: 'Technical Skills', proficiencyLevel: 'Intermediate' as SkillProficiencyLevel, proficiency: 70, verified: true },
   ];
-  const targetOther = [
-    { name: 'Problem Solving', category: 'Other Skills' as const, proficiencyLevel: 'Intermediate' as SkillProficiencyLevel, proficiency: 80, verified: true },
+  const targetOther: StudentSkill[] = [
+    { name: 'Problem Solving', category: 'Other Skills', proficiencyLevel: 'Intermediate' as SkillProficiencyLevel, proficiency: 80, verified: true },
   ];
 
-  const [learner, setLearner] = useState(() => {
+  const [learner, setLearner] = useState<LearnerProfile>(() => {
     const current = getLearner();
     return {
       ...current,
