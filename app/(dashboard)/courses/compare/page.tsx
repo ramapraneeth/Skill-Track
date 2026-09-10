@@ -5,12 +5,83 @@ import Link from 'next/link';
 import { Scale, CheckCircle2, ArrowLeft, Trophy, Star } from 'lucide-react';
 import { INITIAL_COURSES, CourseIntelligenceRecord } from '@/lib/store/skillbridge-store';
 
-export default function CourseComparePage() {
-  const [courseAId, setCourseAId] = useState<string>(INITIAL_COURSES[0].id);
-  const [courseBId, setCourseBId] = useState<string>(INITIAL_COURSES[1].id);
+const defaultCourseA: CourseIntelligenceRecord = {
+  id: 'crs-compare-1',
+  courseCode: 'WD-NSQF-5',
+  title: 'Full Stack Web & Application Development',
+  provider: 'National Skill Training Institute',
+  trainerId: 'trainer-1',
+  trainerName: 'Accredited Master Trainer',
+  category: 'IT & ITES',
+  skillsCovered: ['Next.js', 'React', 'TypeScript', 'SQL'],
+  skillLevel: 'Intermediate',
+  durationWeeks: 12,
+  capacity: 30,
+  enrolledCount: 30,
+  completedCount: 28,
+  certifiedCount: 26,
+  placementReadyCount: 24,
+  placedCount: 22,
+  placementRatePct: 78.5,
+  avgSalaryLpa: 5.8,
+  industryDemand: 'VERY HIGH',
+  courseImpactScore: 89,
+  studentRating: 4.8,
+  status: 'ACTIVE',
+  impactBreakdown: {
+    skillImprovementPct: 82,
+    completionRatePct: 93.3,
+    assessmentAvgPct: 84.5,
+    certificationRatePct: 86.7,
+    placementRatePct: 78.5,
+    industryRelevancePct: 94,
+  },
+  description: 'Full stack development with modern web frameworks.',
+  syllabus: ['React', 'Next.js', 'Node.js', 'PostgreSQL'],
+};
 
-  const courseA = INITIAL_COURSES.find((c) => c.id === courseAId) || INITIAL_COURSES[0];
-  const courseB = INITIAL_COURSES.find((c) => c.id === courseBId) || INITIAL_COURSES[1];
+const defaultCourseB: CourseIntelligenceRecord = {
+  id: 'crs-compare-2',
+  courseCode: 'CLOUD-NSQF-6',
+  title: 'Cloud Infrastructure & DevOps Systems',
+  provider: 'National Skill Training Institute',
+  trainerId: 'trainer-1',
+  trainerName: 'Accredited Master Trainer',
+  category: 'IT & ITES',
+  skillsCovered: ['AWS', 'Docker', 'Kubernetes', 'Linux'],
+  skillLevel: 'Advanced',
+  durationWeeks: 16,
+  capacity: 30,
+  enrolledCount: 30,
+  completedCount: 27,
+  certifiedCount: 25,
+  placementReadyCount: 25,
+  placedCount: 23,
+  placementRatePct: 85.2,
+  avgSalaryLpa: 7.4,
+  industryDemand: 'VERY HIGH',
+  courseImpactScore: 92,
+  studentRating: 4.9,
+  status: 'ACTIVE',
+  impactBreakdown: {
+    skillImprovementPct: 88,
+    completionRatePct: 90.0,
+    assessmentAvgPct: 86.0,
+    certificationRatePct: 88.0,
+    placementRatePct: 85.2,
+    industryRelevancePct: 96,
+  },
+  description: 'Enterprise cloud infrastructure and deployment pipelines.',
+  syllabus: ['Linux', 'Docker', 'Kubernetes', 'Cloud Security'],
+};
+
+export default function CourseComparePage() {
+  const availableCourses = INITIAL_COURSES.length >= 2 ? INITIAL_COURSES : [defaultCourseA, defaultCourseB];
+  const [courseAId, setCourseAId] = useState<string>(availableCourses[0].id);
+  const [courseBId, setCourseBId] = useState<string>(availableCourses[1].id);
+
+  const courseA = availableCourses.find((c) => c.id === courseAId) || availableCourses[0];
+  const courseB = availableCourses.find((c) => c.id === courseBId) || availableCourses[1];
 
   const metrics = [
     { label: 'Students Enrolled', valA: courseA.enrolledCount, valB: courseB.enrolledCount, higherBetter: true },
@@ -66,7 +137,7 @@ export default function CourseComparePage() {
             onChange={(e) => setCourseAId(e.target.value)}
             className="w-full h-10 px-3 text-xs border border-[#CBD5E1] rounded bg-white font-semibold text-[#102A43]"
           >
-            {INITIAL_COURSES.map((c) => (
+            {availableCourses.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.title} ({c.provider})
               </option>
@@ -83,7 +154,7 @@ export default function CourseComparePage() {
             onChange={(e) => setCourseBId(e.target.value)}
             className="w-full h-10 px-3 text-xs border border-[#CBD5E1] rounded bg-white font-semibold text-[#102A43]"
           >
-            {INITIAL_COURSES.map((c) => (
+            {availableCourses.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.title} ({c.provider})
               </option>

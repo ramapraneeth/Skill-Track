@@ -36,12 +36,17 @@ export default function TrainerAssessmentsPage() {
         }
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {assessments.map((a) => (
-          <div
-            key={a.id}
-            className="bg-white rounded-lg border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between"
-          >
+      {assessments.length === 0 ? (
+        <div className="bg-white rounded-xl border border-slate-200 p-12 text-center text-slate-500 text-xs shadow-xs">
+          No scheduled assessments found. Click &quot;Create New Assessment&quot; to configure a formative or summative evaluation rubric.
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {assessments.map((a) => (
+            <div
+              key={a.id}
+              className="bg-white rounded-lg border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between"
+            >
             <div className="p-5">
               <div className="flex justify-between items-center mb-2">
                 <span className="text-[11px] font-bold uppercase tracking-wider text-blue-800 bg-blue-50 px-2 py-0.5 rounded">
@@ -85,6 +90,7 @@ export default function TrainerAssessmentsPage() {
           </div>
         ))}
       </div>
+    )}
     </div>
   );
 }

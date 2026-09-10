@@ -13,54 +13,70 @@ export default function StudentCoursesPage() {
 
   const courses = sidhStore.getCourses();
 
-  const recommendedCourses = [
+  const fallbackCourses = [
     {
-      ...courses[0],
+      id: 'crs-001',
+      title: 'Full Stack Web & Application Development',
+      code: 'WD-NSQF-5',
+      sector: 'IT & ITES',
+      nsqfLevel: 5,
+      totalHours: 200,
+      mode: 'Hybrid',
       impactScore: 89,
       placementRate: '76.5%',
       avgSalary: '₹5.8 LPA',
       placedCount: 620,
-      whyRecommended: 'Recommended because it directly bridges 3 high-priority missing skills for your target role "Full Stack Web Developer".',
+      whyRecommended: 'Recommended because it directly bridges high-priority missing skills for target software development roles.',
     },
     {
-      ...courses[2] || courses[0],
-      id: 'crs-004',
-      title: 'DevOps Engineering, Docker Containers & Kubernetes',
-      sector: 'IT-ITeS & Cloud',
-      nsqfLevel: 7,
-      totalHours: 320,
+      id: 'crs-002',
+      title: 'Cloud Infrastructure & DevOps Engineering',
+      code: 'CLOUD-NSQF-6',
+      sector: 'IT & ITES',
+      nsqfLevel: 6,
+      totalHours: 240,
+      mode: 'Practical Labs',
       impactScore: 92,
       placementRate: '74.2%',
-      avgSalary: '₹7.8 LPA',
-      placedCount: 240,
-      whyRecommended: 'Recommended based on rapid national industry demand growth (+58%) and critical regional talent shortage.',
+      avgSalary: '₹7.2 LPA',
+      placedCount: 340,
+      whyRecommended: 'Recommended based on high industry hiring weight and regional talent shortage.',
     },
     {
-      ...courses[1] || courses[0],
       id: 'crs-003',
-      title: 'Enterprise Business Intelligence & Power BI Data Modeling',
-      sector: 'BFSI & IT',
+      title: 'Relational Database Architecture & SQL Analytics',
+      code: 'DB-NSQF-5',
+      sector: 'IT & ITES',
       nsqfLevel: 5,
       totalHours: 160,
-      impactScore: 87,
-      placementRate: '66.7%',
-      avgSalary: '₹5.4 LPA',
-      placedCount: 510,
-      whyRecommended: 'Recommended to expand secondary data analytics and reporting capabilities for business-facing engineering roles.',
+      mode: 'Classroom',
+      impactScore: 86,
+      placementRate: '68.0%',
+      avgSalary: '₹5.0 LPA',
+      placedCount: 410,
+      whyRecommended: 'Recommended to build verified backend and data persistence capabilities.',
     },
   ];
 
-  const displayedCourses = activeTab === 'recommendations' ? recommendedCourses : courses.map(c => ({
+  const recommendedCourses = fallbackCourses;
+  const allAvailableCourses = courses.length > 0 ? courses.map(c => ({
     ...c,
+    title: c.title || 'NSQF Course',
+    sector: c.sector || 'IT & ITES',
     impactScore: 85,
     placementRate: '71.2%',
     avgSalary: '₹5.2 LPA',
     placedCount: 380,
     whyRecommended: 'Standard accredited NSQF curriculum aligned with National Occupational Standards.',
-  }));
+  })) : fallbackCourses;
+
+  const displayedCourses = activeTab === 'recommendations' ? fallbackCourses : allAvailableCourses;
 
   const filtered = displayedCourses.filter((c) => {
-    const matchesSearch = c.title.toLowerCase().includes(search.toLowerCase()) || c.sector.toLowerCase().includes(search.toLowerCase());
+    const title = (c.title || '').toLowerCase();
+    const sector = (c.sector || '').toLowerCase();
+    const q = search.toLowerCase();
+    const matchesSearch = title.includes(q) || sector.includes(q);
     const matchesSector = selectedSector === 'All' || c.sector === selectedSector;
     return matchesSearch && matchesSector;
   });

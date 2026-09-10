@@ -936,6 +936,48 @@ export function saveSchemes(schemes: SchemeRecord[]): void {
 // Consolidated SIDH Store facade for multi-portal access
 const MOCK_LEARNERS_LIST: any[] = [];
 
+const DEFAULT_TRAINER: any = {
+  id: 'trainer-default',
+  name: 'Accredited Master Trainer',
+  email: 'provider@skilltrack.org.in',
+  phone: '+91 80 2345 6789',
+  status: 'Verified',
+  sector: 'IT & ITES',
+  qualification: 'M.Tech / Certified Master Trainer',
+};
+
+const DEFAULT_COURSE: any = {
+  id: 'crs-default',
+  title: 'Full Stack Web & Application Development',
+  code: 'WD-NSQF-5',
+  sector: 'IT & ITES',
+  nsqfLevel: 5,
+  totalHours: 200,
+  mode: 'Hybrid',
+  description: 'Accredited NSQF course aligned with National Occupational Standards.',
+  syllabus: [],
+};
+
+const DEFAULT_BATCH: any = {
+  id: 'batch-default',
+  trainerId: 'trainer-1',
+  name: 'Standard Skilling Batch',
+  code: 'BATCH-2026-01',
+  timing: 'Mon-Fri 09:30 AM - 01:30 PM',
+  enrolledLearners: 0,
+  maxCapacity: 30,
+  status: 'In Progress',
+};
+
+const DEFAULT_ASSESSMENT: any = {
+  id: 'ass-default',
+  title: 'Summative Practical Assessment',
+  totalQuestions: 5,
+  passingScore: 60,
+  sector: 'IT & ITES',
+  nsqfLevel: 5,
+};
+
 export const sidhStore = {
   getLearners: () => {
     const l = getLearner();
@@ -963,7 +1005,7 @@ export const sidhStore = {
     })),
   getTrainerById: (id: string) => {
     const list = sidhStore.getTrainers();
-    return list.find((t) => t.id === id || t.id === 'trainer-1') || list[0];
+    return list.find((t) => t.id === id || t.id === 'trainer-1') || list[0] || DEFAULT_TRAINER;
   },
 
   getCourses: () =>
@@ -975,7 +1017,7 @@ export const sidhStore = {
     })),
   getCourseById: (id: string) => {
     const list = sidhStore.getCourses();
-    return list.find((c) => c.id === id) || list[0];
+    return list.find((c) => c.id === id) || list[0] || DEFAULT_COURSE;
   },
 
   getBatches: () =>
@@ -986,13 +1028,13 @@ export const sidhStore = {
       name: b.courseTitle || 'Web Application Development Batch',
       code: b.id.toUpperCase() || 'BATCH-2026-WD01',
       timing: b.timings || 'Mon-Fri 09:30 AM - 01:30 PM',
-      enrolledLearners: b.enrolledLearnerIds?.length ? b.enrolledLearnerIds.length + 27 : 28,
+      enrolledLearners: b.enrolledLearnerIds?.length ? b.enrolledLearnerIds.length : 0,
       maxCapacity: b.capacity || 30,
       status: b.status || 'In Progress',
     })),
   getBatchById: (id: string) => {
     const list = sidhStore.getBatches();
-    return list.find((b) => b.id === id) || list[0];
+    return list.find((b) => b.id === id) || list[0] || DEFAULT_BATCH;
   },
 
   getAssessments: () =>
@@ -1004,7 +1046,7 @@ export const sidhStore = {
     })),
   getAssessmentById: (id: string) => {
     const list = sidhStore.getAssessments();
-    return list.find((a) => a.id === id) || list[0];
+    return list.find((a) => a.id === id) || list[0] || DEFAULT_ASSESSMENT;
   },
 
   getSkills: () => [

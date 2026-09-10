@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -9,40 +9,17 @@ import {
   Eye,
   EyeOff,
   ArrowRight,
-  ShieldCheck,
-  GraduationCap,
-  Briefcase,
-  Sparkles,
+  Shield,
 } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
-  const [identifier, setIdentifier] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
-  const [selectedRole, setSelectedRole] = useState<'learner' | 'trainer' | 'government'>('learner');
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      const roleParam = params.get('role');
-      if (roleParam === 'trainer' || roleParam === 'provider') {
-        setSelectedRole('trainer');
-      } else if (roleParam === 'government') {
-        setSelectedRole('government');
-      } else if (roleParam === 'learner') {
-        setSelectedRole('learner');
-      }
-    }
-  }, []);
-
-  const handleQuickFill = (role: 'learner' | 'trainer' | 'government') => {
-    setSelectedRole(role);
-    setErrorMessage(null);
-  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,9 +31,8 @@ export default function LoginPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          email: identifier,
+          email: email.trim(),
           password,
-          role: selectedRole === 'trainer' ? 'provider' : selectedRole,
         }),
       });
 
@@ -65,18 +41,21 @@ export default function LoginPage() {
         throw new Error(json.error?.message || 'Authentication failed. Please verify your credentials.');
       }
 
-      localStorage.setItem('skilltrack_user', JSON.stringify(json.data.user));
-      localStorage.setItem('skilltrack_role', selectedRole);
+      const user = json.data.user;
+      localStorage.setItem('skilltrack_user', JSON.stringify(user));
+      localStorage.setItem('skilltrack_role', user.role);
       localStorage.setItem('skilltrack_token', json.data.token);
 
-      const targetRoute =
-        selectedRole === 'learner'
-          ? '/learner/dashboard'
-          : selectedRole === 'trainer'
-          ? '/trainer/dashboard'
-          : '/government/dashboard';
-
-      router.push(targetRoute);
+      // Route automatically based strictly on authenticated user's role from database
+      if (user.role === 'learner') {
+        router.push('/learner/dashboard');
+      } else if (user.role === 'provider' || user.role === 'trainer') {
+        router.push('/trainer/dashboard');
+      } else if (user.role === 'government' || user.role === 'admin') {
+        router.push('/government/dashboard');
+      } else {
+        router.push('/learner/dashboard');
+      }
     } catch (err: any) {
       setErrorMessage(err.message || 'Authentication failed');
     } finally {
@@ -86,109 +65,83 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
-      {/* Tricolor Micro-strip */}
-      <div className="h-1 w-full flex">
-        <div className="flex-1 bg-[#FF9933]" />
-        <div className="flex-1 bg-white" />
-        <div className="flex-1 bg-[#138808]" />
-      </div>
-
-      {/* Header */}
-      <header className="bg-white border-b border-[#CBD5E1] p-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
+      {/* Top Navbar */}
+      <header className="bg-[#0B1E36] border-b border-[#1E3A5F] text-white sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded bg-[#0B3B60] text-white flex items-center justify-center font-bold text-xs">
-              SIDH
+            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-[#1D4ED8] to-[#0B3B60] flex items-center justify-center text-white font-black text-sm shadow-sm border border-white/20">
+              ST
             </div>
-            <span className="font-extrabold text-[#0B3B60] text-sm tracking-tight">
-              Skill India Digital Hub
-            </span>
+            <div className="flex flex-col">
+              <span className="font-extrabold text-white text-base tracking-tight leading-none">
+                Skill Track
+              </span>
+              <span className="text-[10px] text-slate-400 font-medium">
+                Unified Institutional Access
+              </span>
+            </div>
           </Link>
 
-          <Link href="/register" className="text-xs font-bold text-[#0B3B60] hover:underline">
-            Don't have an account? Register →
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/"
+              className="text-xs font-semibold text-slate-300 hover:text-white transition-colors"
+            >
+              Home
+            </Link>
+            <Link
+              href="/register"
+              className="text-xs font-bold px-3 py-1.5 rounded bg-blue-600 hover:bg-blue-700 text-white transition-colors shadow-xs"
+            >
+              Register Candidate
+            </Link>
+          </div>
         </div>
       </header>
 
       {/* Main Login Card */}
-      <main className="flex-1 flex items-center justify-center p-4">
-        <div className="bg-white border border-[#CBD5E1] rounded-lg shadow-xl max-w-md w-full overflow-hidden">
-          <div className="bg-[#0B3B60] text-white p-6 border-b border-white/10">
-            <span className="text-[10px] font-bold text-[#FF9933] uppercase tracking-wider block">
-              Authorized Institutional Access
-            </span>
-            <h2 className="text-xl font-black mt-1">Sign In to SIDH Platform</h2>
-            <p className="text-xs text-[#CBD5E1] mt-0.5">
-              Select your portal persona to proceed
+      <main className="flex-1 flex items-center justify-center p-4 sm:p-6">
+        <div className="bg-white border border-[#CBD5E1] rounded-xl shadow-xl max-w-md w-full overflow-hidden">
+          <div className="bg-[#0B1E36] text-white p-6 border-b border-white/10">
+            <div className="flex items-center gap-2 text-[10px] font-bold text-[#FF9933] uppercase tracking-wider">
+              <Shield className="w-3.5 h-3.5" />
+              <span>Secure Authentication</span>
+            </div>
+            <h1 className="text-xl font-black mt-1">Sign In to Skill Track</h1>
+            <p className="text-xs text-slate-300 mt-1">
+              Enter your verified credentials to access your portal
             </p>
           </div>
 
-          {/* Persona selector tabs */}
-          <div className="bg-[#F1F5F9] p-2 border-b border-[#CBD5E1] grid grid-cols-3 gap-1 text-xs">
-            <button
-              type="button"
-              onClick={() => handleQuickFill('learner')}
-              className={`py-2 rounded font-bold transition-all ${
-                selectedRole === 'learner'
-                  ? 'bg-[#0B3B60] text-white shadow-xs'
-                  : 'bg-white text-[#334E68] border border-[#CBD5E1] hover:bg-[#E2E8F0]'
-              }`}
-            >
-              Learner
-            </button>
-            <button
-              type="button"
-              onClick={() => handleQuickFill('trainer')}
-              className={`py-2 rounded font-bold transition-all ${
-                selectedRole === 'trainer'
-                  ? 'bg-[#0B3B60] text-white shadow-xs'
-                  : 'bg-white text-[#334E68] border border-[#CBD5E1] hover:bg-[#E2E8F0]'
-              }`}
-            >
-              Trainer
-            </button>
-            <button
-              type="button"
-              onClick={() => handleQuickFill('government')}
-              className={`py-2 rounded font-bold transition-all ${
-                selectedRole === 'government'
-                  ? 'bg-[#0B3B60] text-white shadow-xs'
-                  : 'bg-white text-[#334E68] border border-[#CBD5E1] hover:bg-[#E2E8F0]'
-              }`}
-            >
-              Gov Admin
-            </button>
-          </div>
-
-          <form onSubmit={handleLogin} className="p-6 space-y-4">
+          <form onSubmit={handleLogin} className="p-6 sm:p-8 space-y-4">
             {errorMessage && (
-              <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 text-xs rounded">
-                {errorMessage}
+              <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 text-xs rounded-lg flex items-start gap-2">
+                <span className="font-bold">Error:</span>
+                <span>{errorMessage}</span>
               </div>
             )}
 
             <div>
-              <label className="block text-xs font-semibold text-[#1E293B] mb-1">
-                Email Address or Registered Mobile Number
+              <label className="block text-xs font-semibold text-[#1E293B] mb-1.5">
+                Email Address or Registered Identifier
               </label>
               <div className="relative">
                 <Mail className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
                 <input
-                  type="text"
+                  type="email"
                   required
-                  value={identifier}
-                  onChange={(e) => setIdentifier(e.target.value)}
-                  placeholder="user@skillbridge.gov.in"
-                  className="w-full h-10 pl-9 pr-3 text-xs border border-[#CBD5E1] rounded bg-white text-[#0F172A] focus:outline-none focus:border-[#0B3B60]"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="name@organization.gov.in"
+                  className="w-full h-10 pl-9 pr-3 text-xs border border-[#CBD5E1] rounded-lg bg-white text-[#0F172A] focus:outline-none focus:border-[#0B1E36] focus:ring-1 focus:ring-[#0B1E36] transition-all"
                 />
               </div>
             </div>
 
             <div>
-              <div className="flex items-center justify-between mb-1">
+              <div className="flex items-center justify-between mb-1.5">
                 <label className="text-xs font-semibold text-[#1E293B]">Password</label>
-                <Link href="/forgot-password" className="text-[11px] text-[#0284C7] hover:underline">
+                <Link href="/forgot-password" className="text-[11px] text-blue-600 hover:underline">
                   Forgot Password?
                 </Link>
               </div>
@@ -199,7 +152,8 @@ export default function LoginPage() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full h-10 pl-9 pr-10 text-xs border border-[#CBD5E1] rounded bg-white text-[#0F172A] focus:outline-none focus:border-[#0B3B60]"
+                  placeholder="••••••••••••"
+                  className="w-full h-10 pl-9 pr-10 text-xs border border-[#CBD5E1] rounded-lg bg-white text-[#0F172A] focus:outline-none focus:border-[#0B1E36] focus:ring-1 focus:ring-[#0B1E36] transition-all"
                 />
                 <button
                   type="button"
@@ -211,13 +165,13 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <div className="flex items-center justify-between text-xs">
+            <div className="flex items-center justify-between text-xs pt-1">
               <label className="flex items-center gap-2 cursor-pointer text-[#475569]">
                 <input
                   type="checkbox"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
-                  className="rounded border-[#CBD5E1] text-[#0B3B60]"
+                  className="rounded border-[#CBD5E1] text-[#0B1E36] focus:ring-[#0B1E36]"
                 />
                 <span>Remember me on this device</span>
               </label>
@@ -226,14 +180,23 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full h-11 rounded bg-[#0B3B60] hover:bg-[#002541] text-white font-bold text-xs flex items-center justify-center gap-2 transition-all uppercase tracking-wider shadow-xs"
+              className="w-full h-11 rounded-lg bg-[#0B1E36] hover:bg-[#1E3A5F] text-white font-bold text-xs flex items-center justify-center gap-2 transition-all uppercase tracking-wider shadow-sm disabled:opacity-50 mt-2"
             >
-              {isLoading ? 'Verifying...' : `Login to ${selectedRole.toUpperCase()} Portal`}
-              <ArrowRight className="w-4 h-4" />
+              {isLoading ? (
+                <span>Authenticating...</span>
+              ) : (
+                <>
+                  <span>Sign In</span>
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              )}
             </button>
 
-            <div className="pt-2 text-center text-xs text-[#64748B]">
-              Need help? <Link href="/verify" className="text-[#0B3B60] font-semibold hover:underline">Verify Existing Credential</Link>
+            <div className="pt-4 border-t border-slate-100 text-center text-xs text-[#64748B]">
+              New Candidate?{' '}
+              <Link href="/register" className="text-blue-600 font-bold hover:underline">
+                Create Candidate Account →
+              </Link>
             </div>
           </form>
         </div>
