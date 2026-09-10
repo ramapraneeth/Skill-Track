@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -24,20 +24,6 @@ export default function LoginPage() {
   const [selectedRole, setSelectedRole] = useState<'learner' | 'trainer' | 'government'>('learner');
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      const roleParam = params.get('role');
-      if (roleParam === 'trainer' || roleParam === 'provider') {
-        setSelectedRole('trainer');
-      } else if (roleParam === 'government') {
-        setSelectedRole('government');
-      } else if (roleParam === 'learner') {
-        setSelectedRole('learner');
-      }
-    }
-  }, []);
 
   const handleQuickFill = (role: 'learner' | 'trainer' | 'government') => {
     setSelectedRole(role);
