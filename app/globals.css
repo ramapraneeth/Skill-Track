@@ -3,21 +3,24 @@
 @tailwind utilities;
 
 :root {
-  --gov-navy: #0B2D4F;
-  --gov-deep-blue: #12345B;
-  --gov-blue: #1769E0;
-  --gov-action: #1E6FF2;
+  --gov-white: #FFFFFF;
+  --gov-bg: #F7FAFE;
+  --gov-very-light-blue: #F2F8FF;
   --gov-light-blue: #EAF4FF;
+  --gov-soft-blue: #E1F0FF;
+  --gov-navy: #0B2F55;
+  --gov-secondary-navy: #153F6B;
+  --gov-blue: #1769E0;
+  --gov-bright-blue: #2563EB;
+  --gov-border: #CFE3FA;
+  --gov-green: #16A36A;
   --gov-orange: #F59E0B;
-  --gov-green: #16A34A;
-  --gov-border: #E4EDF7;
-  --gov-bg: #F5F9FD;
 }
 
 body {
   background-color: var(--gov-bg);
-  color: #0B2D4F;
-  font-family: 'Inter', 'Manrope', system-ui, -apple-system, sans-serif;
+  color: #0B2F55;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
   font-feature-settings: 'tnum' on, 'lnum' on;
   -webkit-font-smoothing: antialiased;
 }

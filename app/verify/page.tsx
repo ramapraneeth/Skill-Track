@@ -61,35 +61,48 @@ export default function VerifyCredentialsPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F5F9FD] text-[#0B2D4F]">
+    <div className="min-h-screen flex flex-col bg-[#F7FAFE] text-[#0B2F55]">
       {/* Subtle National Tricolor Micro-strip */}
       <div className="h-1 w-full flex">
         <div className="flex-1 bg-[#F59E0B]" />
         <div className="flex-1 bg-white" />
-        <div className="flex-1 bg-[#16A34A]" />
+        <div className="flex-1 bg-[#16A36A]" />
       </div>
 
       {/* Official Government Header */}
-      <header className="bg-white border-b border-[#E5EDF5] sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-[76px] flex items-center justify-between">
+      <header className="bg-white border-b border-[#E5EDF6] sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-[80px] flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className="flex flex-col border-r border-[#CBDDF6] pr-4">
-              <span className="text-[10px] font-bold tracking-widest text-[#0B2D4F] uppercase leading-tight">
+            {/* State Emblem representation */}
+            <div className="w-8 h-10 flex-shrink-0 flex items-center justify-center text-[#0B2F55]">
+              <svg viewBox="0 0 100 125" className="w-7 h-9 fill-current" aria-label="State Emblem of India">
+                <path d="M50 8 C46 8 43 11 43 15 C43 17 44 19 46 20 C42 22 39 26 39 31 C39 36 43 40 47 41 C46 43 45 45 45 48 C42 48 39 50 38 53 C37 57 39 61 43 62 L43 72 L37 72 C35 72 33 74 33 76 L33 80 L67 80 L67 76 C67 74 65 72 63 72 L57 72 L57 62 C61 61 63 57 62 53 C61 50 58 48 55 48 C55 45 54 43 53 41 C57 40 61 36 61 31 C61 26 58 22 54 20 C56 19 57 17 57 15 C57 11 54 8 50 8 Z" />
+                <path d="M36 24 C33 22 28 24 26 27 C24 30 24 35 26 38 C28 41 32 42 35 41 C36 39 37 36 38 33 C37 30 36 27 36 24 Z" opacity="0.9" />
+                <path d="M64 24 C67 22 72 24 74 27 C76 30 76 35 74 38 C72 41 68 42 65 41 C64 39 63 36 62 33 C63 30 64 27 64 24 Z" opacity="0.9" />
+                <rect x="22" y="82" width="56" height="11" rx="2" fill="currentColor" />
+                <circle cx="50" cy="87.5" r="4.5" fill="#FFFFFF" />
+                <circle cx="50" cy="87.5" r="1.5" fill="currentColor" />
+                <path d="M26 95 C30 102 40 106 50 106 C60 106 70 102 74 95 L26 95 Z" opacity="0.85" />
+                <rect x="20" y="108" width="60" height="4" rx="1.5" />
+              </svg>
+            </div>
+            <div className="flex flex-col border-r border-[#CFE3FA] pr-4">
+              <span className="text-[10px] font-bold tracking-widest text-[#0B2F55] uppercase leading-tight">
                 Government of India
               </span>
-              <span className="text-[9px] text-[#4B6380] font-medium leading-tight">
+              <span className="text-[9px] text-[#45627F] font-medium leading-tight">
                 National Credential Trust Network
               </span>
             </div>
             <Link href="/" className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-[#1769E0] text-white flex items-center justify-center font-black text-xs shadow-xs">
+              <div className="w-8 h-8 rounded-lg bg-[#1769E0] text-white flex items-center justify-center font-extrabold text-xs shadow-2xs">
                 ST
               </div>
               <div>
-                <span className="font-extrabold text-[#0B2D4F] text-sm tracking-tight block">
+                <span className="font-extrabold text-[#0B2F55] text-sm tracking-tight block">
                   Skill Track
                 </span>
-                <span className="text-[10px] text-[#4B6380] block -mt-0.5">
+                <span className="text-[10px] text-[#45627F] block -mt-0.5">
                   Statutory Accreditation Registry
                 </span>
               </div>
@@ -99,13 +112,13 @@ export default function VerifyCredentialsPage() {
           <div className="flex items-center gap-3">
             <Link
               href="/"
-              className="text-xs font-semibold text-[#4B6380] hover:text-[#0B2D4F] transition-colors"
+              className="text-xs font-semibold text-[#45627F] hover:text-[#0B2F55] transition-colors"
             >
               Home
             </Link>
             <Link
               href="/login"
-              className="text-xs font-bold px-3.5 py-1.5 rounded-lg bg-[#1769E0] hover:bg-[#1E6FF2] text-white transition-colors shadow-xs"
+              className="text-xs font-bold px-4 py-2 rounded-lg bg-[#1769E0] hover:bg-[#2563EB] text-white transition-colors shadow-2xs"
             >
               Sign In
             </Link>
