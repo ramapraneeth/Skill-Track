@@ -8,7 +8,9 @@ __pycache__/
 # Builds
 dist/
 build/
+.next/
 *.egg-info/
+*.tsbuildinfo
 .tmp/
 
 # Local databases & logs

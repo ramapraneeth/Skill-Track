@@ -1,0 +1,300 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model alembic_version {
+  version_num String @id(map: "alembic_version_pkc") @db.VarChar(32)
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model apprenticeship_outcomes {
+  id                 String    @id @db.VarChar(36)
+  learner_id         String    @db.VarChar(36)
+  establishment_name String    @db.VarChar(200)
+  sector             String    @db.VarChar(100)
+  stipend_amount     Float
+  start_date         String    @db.VarChar(50)
+  duration_months    Int?
+  contract_number    String    @db.VarChar(100)
+  created_at         DateTime? @db.Timestamptz(6)
+  learners           learners  @relation(fields: [learner_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([learner_id], map: "ix_app_learner")
+  @@index([sector], map: "ix_app_sector")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model employment_outcomes {
+  id             String    @id @db.VarChar(36)
+  learner_id     String    @db.VarChar(36)
+  job_id         String?   @db.VarChar(36)
+  employer_name  String    @db.VarChar(200)
+  designation    String    @db.VarChar(150)
+  sector         String    @db.VarChar(100)
+  district       String    @db.VarChar(100)
+  state          String    @db.VarChar(100)
+  monthly_salary Float
+  start_date     String    @db.VarChar(50)
+  status         String?   @db.VarChar(50)
+  verified       Boolean?
+  created_at     DateTime? @db.Timestamptz(6)
+  jobs           jobs?     @relation(fields: [job_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  learners       learners  @relation(fields: [learner_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([learner_id, status], map: "ix_emp_learner_status")
+  @@index([sector], map: "ix_emp_sector")
+  @@index([verified], map: "ix_emp_verified")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model followups {
+  id                     String    @id @db.VarChar(36)
+  learner_id             String    @db.VarChar(36)
+  milestone              String    @db.VarChar(50)
+  followup_date          String    @db.VarChar(50)
+  employment_status      String?   @db.VarChar(50)
+  current_salary         Float?
+  retention_status       String?   @db.VarChar(50)
+  job_satisfaction_score Int?
+  skill_relevance_score  Int?
+  attrition_reason       String?   @db.VarChar(255)
+  notes                  String?
+  surveyor_role          String?   @db.VarChar(50)
+  created_at             DateTime? @db.Timestamptz(6)
+  learners               learners  @relation(fields: [learner_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([learner_id, milestone], map: "uq_learner_milestone")
+  @@index([learner_id, milestone], map: "ix_followup_learner_milestone")
+  @@index([retention_status], map: "ix_followup_retention")
+}
+
+model impact_measurements {
+  id                      String    @id @db.VarChar(36)
+  entity_type             String    @db.VarChar(50)
+  entity_title            String    @db.VarChar(255)
+  period                  String    @db.VarChar(100)
+  baseline_placement_rate Float?
+  post_placement_rate     Float?
+  baseline_retention_rate Float?
+  post_retention_rate     Float?
+  baseline_avg_wage       Float?
+  post_avg_wage           Float?
+  sample_size             Int?
+  evaluation_method       String?   @db.VarChar(50)
+  notes                   String?
+  created_at              DateTime? @db.Timestamptz(6)
+
+  @@index([entity_type, period], map: "ix_impact_entity_period")
+}
+
+model interventions {
+  id                     String    @id @db.VarChar(36)
+  learner_id             String    @db.VarChar(36)
+  recommended_by         String    @db.VarChar(150)
+  category               String    @db.VarChar(50)
+  title                  String    @db.VarChar(255)
+  description            String
+  status                 String?   @db.VarChar(50)
+  target_completion_date String    @db.VarChar(50)
+  completed_date         String?   @db.VarChar(50)
+  outcome_notes          String?
+  created_at             DateTime? @db.Timestamptz(6)
+  learners               learners  @relation(fields: [learner_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([category], map: "ix_int_category")
+  @@index([learner_id, status], map: "ix_int_learner_status")
+}
+
+model jobs {
+  id                  String                @id @db.VarChar(36)
+  title               String                @db.VarChar(200)
+  company_name        String                @db.VarChar(200)
+  sector              String                @db.VarChar(100)
+  state               String                @db.VarChar(100)
+  district            String                @db.VarChar(100)
+  min_salary          Float?
+  max_salary          Float?
+  experience_months   Int?
+  vacancies           Int?
+  is_active           Boolean?
+  required_skills     Json?                 @db.Json
+  created_at          DateTime?             @db.Timestamptz(6)
+  employment_outcomes employment_outcomes[]
+
+  @@index([district], map: "ix_jobs_district")
+  @@index([sector, state], map: "ix_jobs_sector_state")
+}
+
+model learner_skills {
+  id                String    @id @db.VarChar(36)
+  learner_id        String    @db.VarChar(36)
+  skill_id          String    @db.VarChar(36)
+  skill_name        String    @db.VarChar(150)
+  category          String?   @db.VarChar(50)
+  proficiency_level String?   @db.VarChar(50)
+  assessed_score    Float?
+  verified          Boolean?
+  acquired_from     String?   @db.VarChar(150)
+  created_at        DateTime? @db.Timestamptz(6)
+  learners          learners  @relation(fields: [learner_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  skills            skills    @relation(fields: [skill_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([learner_id, skill_id], map: "uq_learner_skill")
+  @@index([learner_id, skill_id], map: "ix_ls_learner_skill")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model learners {
+  id                          String                     @id @db.VarChar(36)
+  user_id                     String?                    @db.VarChar(36)
+  provider_id                 String                     @db.VarChar(36)
+  current_programme_id        String?                    @db.VarChar(36)
+  learner_code                String                     @unique(map: "ix_learners_learner_code") @db.VarChar(50)
+  full_name                   String                     @db.VarChar(150)
+  gender                      String                     @db.VarChar(20)
+  age                         Int
+  state                       String                     @db.VarChar(100)
+  district                    String                     @db.VarChar(100)
+  education_level             String                     @db.VarChar(100)
+  socio_economic_category     String?                    @db.VarChar(50)
+  current_status              String?                    @db.VarChar(50)
+  profile_completion_pct      Int?
+  avatar_url                  String?                    @db.VarChar(500)
+  current_salary              Float?
+  retention_milestone_reached String?                    @db.VarChar(50)
+  risk_level                  String?                    @db.VarChar(20)
+  skill_match_pct             Int?
+  created_at                  DateTime?                  @db.Timestamptz(6)
+  apprenticeship_outcomes     apprenticeship_outcomes[]
+  employment_outcomes         employment_outcomes[]
+  followups                   followups[]
+  interventions               interventions[]
+  learner_skills              learner_skills[]
+  programmes                  programmes?                @relation(fields: [current_programme_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  training_providers          training_providers         @relation(fields: [provider_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users                       users?                     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  predictions                 predictions[]
+  self_employment_outcomes    self_employment_outcomes[]
+
+  @@index([current_programme_id], map: "ix_learners_programme")
+  @@index([provider_id], map: "ix_learners_provider")
+  @@index([state, district], map: "ix_learners_state_district")
+  @@index([current_status, risk_level], map: "ix_learners_status_risk")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model predictions {
+  id                        String    @id @db.VarChar(36)
+  learner_id                String    @db.VarChar(36)
+  prediction_type           String    @db.VarChar(50)
+  probability               Float
+  risk_level                String?   @db.VarChar(20)
+  positive_factors          Json?     @db.Json
+  risk_factors              Json?     @db.Json
+  model_version             String?   @db.VarChar(50)
+  recommended_interventions Json?     @db.Json
+  created_at                DateTime? @db.Timestamptz(6)
+  learners                  learners  @relation(fields: [learner_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([learner_id, prediction_type], map: "ix_pred_learner_type")
+  @@index([risk_level], map: "ix_pred_risk_level")
+}
+
+model programmes {
+  id                 String             @id @db.VarChar(36)
+  provider_id        String             @db.VarChar(36)
+  code               String             @unique(map: "ix_programmes_code") @db.VarChar(50)
+  title              String             @db.VarChar(200)
+  sector             String             @db.VarChar(100)
+  scheme_name        String             @db.VarChar(150)
+  nsqf_level         Int?
+  duration_weeks     Int?
+  total_enrolled     Int?
+  completed_count    Int?
+  certified_count    Int?
+  placed_count       Int?
+  avg_starting_wage  Float?
+  status             String?            @db.VarChar(50)
+  created_at         DateTime?          @db.Timestamptz(6)
+  learners           learners[]
+  training_providers training_providers @relation(fields: [provider_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([provider_id], map: "ix_programmes_provider")
+  @@index([scheme_name], map: "ix_programmes_scheme")
+  @@index([sector], map: "ix_programmes_sector")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model self_employment_outcomes {
+  id                   String    @id @db.VarChar(36)
+  learner_id           String    @db.VarChar(36)
+  enterprise_name      String    @db.VarChar(200)
+  sector               String    @db.VarChar(100)
+  district             String    @db.VarChar(100)
+  state                String    @db.VarChar(100)
+  monthly_revenue      Float
+  start_date           String    @db.VarChar(50)
+  microfinance_support Boolean?
+  created_at           DateTime? @db.Timestamptz(6)
+  learners             learners  @relation(fields: [learner_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([learner_id], map: "ix_self_emp_learner")
+  @@index([sector], map: "ix_self_emp_sector")
+}
+
+model skills {
+  id             String           @id @db.VarChar(36)
+  name           String           @unique(map: "ix_skills_name") @db.VarChar(150)
+  sector         String           @db.VarChar(100)
+  category       String?          @db.VarChar(50)
+  demand_weight  Float?
+  description    String?
+  created_at     DateTime?        @db.Timestamptz(6)
+  learner_skills learner_skills[]
+
+  @@index([category], map: "ix_skills_category")
+  @@index([sector], map: "ix_skills_sector")
+}
+
+model training_providers {
+  id                     String       @id @db.VarChar(36)
+  user_id                String?      @db.VarChar(36)
+  name                   String       @db.VarChar(200)
+  code                   String       @unique(map: "ix_training_providers_code") @db.VarChar(50)
+  state                  String       @db.VarChar(100)
+  district               String       @db.VarChar(100)
+  accreditation_tier     String?      @db.VarChar(50)
+  contact_email          String       @db.VarChar(255)
+  phone                  String?      @db.VarChar(30)
+  active_learners_count  Int?
+  overall_placement_rate Float?
+  overall_retention_rate Float?
+  created_at             DateTime?    @db.Timestamptz(6)
+  learners               learners[]
+  programmes             programmes[]
+  users                  users?       @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([state, district], map: "ix_tp_state_district")
+}
+
+model users {
+  id                 String               @id @db.VarChar(36)
+  email              String               @unique(map: "ix_users_email") @db.VarChar(255)
+  hashed_password    String               @db.VarChar(255)
+  role               String               @db.VarChar(50)
+  full_name          String               @db.VarChar(150)
+  phone              String?              @db.VarChar(30)
+  is_active          Boolean?
+  avatar_url         String?              @db.VarChar(500)
+  created_at         DateTime?            @db.Timestamptz(6)
+  updated_at         DateTime?            @db.Timestamptz(6)
+  learners           learners[]
+  training_providers training_providers[]
+
+  @@index([role], map: "ix_users_role")
+}
