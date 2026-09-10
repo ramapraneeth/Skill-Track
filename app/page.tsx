@@ -26,10 +26,13 @@ import {
   Menu,
   X,
   Database,
+  Home,
+  Info,
 } from 'lucide-react';
 
 export default function HomePage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [dashBarOpen, setDashBarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('ST-2026-IND-8849');
   const [verifiedResult, setVerifiedResult] = useState<any>({
     credentialId: 'ST-2026-IND-8849',
@@ -197,8 +200,22 @@ export default function HomePage() {
       {/* Official Government Header */}
       <header className="sticky top-0 z-50 w-full bg-[#FFFFFF] border-b border-[#E5EDF6] shadow-2xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-[80px] flex items-center justify-between">
-          {/* Left: Government of India & Skill Track Brand Identity */}
-          <div className="flex items-center gap-4 sm:gap-6">
+          {/* Left: The Three Lines Option + Government of India & Skill Track Brand Identity */}
+          <div className="flex items-center gap-3 sm:gap-4">
+            {/* The Three Lines Option on the left side at the top corner */}
+            <button
+              type="button"
+              onClick={() => setDashBarOpen(true)}
+              className="p-2 sm:px-3 sm:py-2 rounded-lg text-[#0B2F55] hover:text-[#1769E0] hover:bg-[#F2F8FF] border border-[#CFE3FA] flex items-center gap-2 transition-all shadow-2xs group cursor-pointer"
+              aria-label="Open Navigation Dash Bar"
+              title="Open Navigation Menu"
+            >
+              <Menu className="w-5 h-5 text-[#0B2F55] group-hover:text-[#1769E0]" />
+              <span className="hidden md:inline-block text-xs font-bold text-[#0B2F55] group-hover:text-[#1769E0]">
+                Menu
+              </span>
+            </button>
+
             {/* Official State Emblem of India representation */}
             <div className="flex items-center gap-3">
               <div className="w-8 h-10 flex-shrink-0 flex items-center justify-center text-[#0B2F55]">
@@ -221,7 +238,7 @@ export default function HomePage() {
                 </svg>
               </div>
 
-              <div className="flex flex-col border-r border-[#CFE3FA] pr-4 sm:pr-6">
+              <div className="flex flex-col border-r border-[#CFE3FA] pr-3 sm:pr-5">
                 <span className="text-[10px] sm:text-[11px] font-bold tracking-widest text-[#0B2F55] uppercase leading-tight">
                   Government of India
                 </span>
@@ -232,11 +249,11 @@ export default function HomePage() {
             </div>
 
             {/* Platform Brand */}
-            <Link href="/" className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-lg bg-[#1769E0] text-white flex items-center justify-center font-extrabold text-sm shadow-2xs border border-blue-600">
+            <Link href="/" className="flex items-center gap-2">
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-[#1769E0] text-white flex items-center justify-center font-extrabold text-xs sm:text-sm shadow-2xs border border-blue-600">
                 ST
               </div>
-              <div className="flex flex-col">
+              <div className="hidden sm:flex flex-col">
                 <span className="font-extrabold text-[#0B2F55] text-base tracking-tight leading-none">
                   Skill Track
                 </span>
@@ -247,92 +264,211 @@ export default function HomePage() {
             </Link>
           </div>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center gap-7 text-xs font-semibold text-[#45627F]">
-            <Link href="/" className="text-[#1769E0] font-bold pb-1 border-b-2 border-[#1769E0] transition-colors">
-              Home
-            </Link>
-            <a href="#about" className="hover:text-[#0B2F55] transition-colors">
-              About
-            </a>
-            <a href="#portals" className="hover:text-[#0B2F55] transition-colors">
-              Institutions
-            </a>
-            <a href="#features" className="hover:text-[#0B2F55] transition-colors">
-              Features
-            </a>
-            <a href="#verify" className="hover:text-[#0B2F55] transition-colors">
-              Verify Credentials
-            </a>
-          </nav>
-
           {/* Header Action CTAs */}
-          <div className="hidden sm:flex items-center gap-3">
+          <div className="flex items-center gap-3">
             <Link
               href="/login"
-              className="h-10 px-5 rounded-lg bg-[#FFFFFF] border border-[#1769E0] hover:bg-[#F2F8FF] text-[#1769E0] font-semibold text-xs flex items-center gap-1.5 transition-colors"
+              className="h-10 px-4 sm:px-5 rounded-lg bg-[#FFFFFF] border border-[#1769E0] hover:bg-[#F2F8FF] text-[#1769E0] font-semibold text-xs flex items-center gap-1.5 transition-colors"
             >
               <span>Sign In</span>
             </Link>
             <Link
               href="/register"
-              className="h-10 px-5 rounded-lg bg-[#1769E0] hover:bg-[#2563EB] text-white font-bold text-xs flex items-center gap-1.5 shadow-2xs transition-colors"
+              className="h-10 px-4 sm:px-5 rounded-lg bg-[#1769E0] hover:bg-[#2563EB] text-white font-bold text-xs flex items-center gap-1.5 shadow-2xs transition-colors"
             >
               <span>Register Candidate</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
-
-          {/* Mobile Hamburger Button */}
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden p-2 rounded-lg text-[#0B2F55] hover:bg-[#F2F8FF] border border-[#E5EDF6]"
-            aria-label="Toggle Navigation Menu"
-          >
-            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
         </div>
+      </header>
 
-        {/* Mobile Dropdown Menu */}
-        {mobileMenuOpen && (
-          <div className="lg:hidden bg-white border-b border-[#E5EDF6] px-4 pt-3 pb-5 space-y-3">
-            <div className="flex flex-col space-y-2 text-sm font-semibold text-[#0B2F55]">
-              <Link href="/" className="py-2 text-[#1769E0]" onClick={() => setMobileMenuOpen(false)}>
-                Home
-              </Link>
-              <a href="#about" className="py-2" onClick={() => setMobileMenuOpen(false)}>
-                About
-              </a>
-              <a href="#portals" className="py-2" onClick={() => setMobileMenuOpen(false)}>
-                Institutions
-              </a>
-              <a href="#features" className="py-2" onClick={() => setMobileMenuOpen(false)}>
-                Features
-              </a>
-              <a href="#verify" className="py-2" onClick={() => setMobileMenuOpen(false)}>
-                Verify Credentials
-              </a>
+      {/* ========================================================
+          VERTICAL FORMAT DASH BAR (DRAWER) - LIKE IN GOVERNMENT WEBSITES
+          Opens when clicking the three lines option on the left side at the top corner
+          ======================================================== */}
+      {dashBarOpen && (
+        <div className="fixed inset-0 z-50 flex">
+          {/* Backdrop Blur Overlay */}
+          <div
+            className="fixed inset-0 bg-[#0B2F55]/40 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
+            onClick={() => setDashBarOpen(false)}
+          />
+
+          {/* Drawer Sidebar Container (Vertical Format) */}
+          <aside className="relative w-80 sm:w-88 max-w-[85vw] h-full bg-white border-r border-[#CFE3FA] shadow-2xl z-50 flex flex-col animate-in slide-in-from-left duration-250">
+            {/* Drawer Top Header with Official Identity & Close Button */}
+            <div className="p-5 border-b border-[#E5EDF6] flex items-center justify-between bg-[#F7FAFE]">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-[#1769E0] text-white flex items-center justify-center font-extrabold text-xs shadow-2xs">
+                  ST
+                </div>
+                <div className="flex flex-col">
+                  <span className="font-extrabold text-[#0B2F55] text-sm tracking-tight leading-none">
+                    Skill Track
+                  </span>
+                  <span className="text-[10px] text-[#45627F] font-medium mt-0.5">
+                    Government Digital Portal
+                  </span>
+                </div>
+              </div>
+
+              {/* Close Button */}
+              <button
+                type="button"
+                onClick={() => setDashBarOpen(false)}
+                className="p-1.5 rounded-lg text-[#45627F] hover:text-[#0B2F55] hover:bg-white border border-transparent hover:border-[#CFE3FA] transition-colors cursor-pointer"
+                aria-label="Close Dash Bar"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
-            <div className="pt-3 border-t border-[#E5EDF6] flex flex-col gap-2">
+
+            {/* State Emblem Strip in Drawer */}
+            <div className="px-5 py-3.5 bg-white border-b border-[#E5EDF6] flex items-center gap-3">
+              <div className="w-6 h-8 text-[#0B2F55] flex-shrink-0">
+                <svg viewBox="0 0 100 125" className="w-6 h-8 fill-current" aria-label="State Emblem of India">
+                  <path d="M50 8 C46 8 43 11 43 15 C43 17 44 19 46 20 C42 22 39 26 39 31 C39 36 43 40 47 41 C46 43 45 45 45 48 C42 48 39 50 38 53 C37 57 39 61 43 62 L43 72 L37 72 C35 72 33 74 33 76 L33 80 L67 80 L67 76 C67 74 65 72 63 72 L57 72 L57 62 C61 61 63 57 62 53 C61 50 58 48 55 48 C55 45 54 43 53 41 C57 40 61 36 61 31 C61 26 58 22 54 20 C56 19 57 17 57 15 C57 11 54 8 50 8 Z" />
+                  <rect x="22" y="82" width="56" height="11" rx="2" fill="currentColor" />
+                  <path d="M26 95 C30 102 40 106 50 106 C60 106 70 102 74 95 L26 95 Z" opacity="0.85" />
+                </svg>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[10px] font-bold text-[#0B2F55] uppercase tracking-wider leading-tight">
+                  Government of India
+                </span>
+                <span className="text-[9px] text-[#45627F] leading-tight">
+                  Ministry of Skill Development &amp; Entrepreneurship
+                </span>
+              </div>
+            </div>
+
+            {/* Vertical Format Navigation List (Requested Items in Vertical Format) */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-6">
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#45627F] px-3 mb-2.5 block">
+                  Portal Navigation
+                </span>
+                <nav className="space-y-1.5">
+                  {/* 1. Home */}
+                  <Link
+                    href="/"
+                    onClick={() => setDashBarOpen(false)}
+                    className="flex items-center gap-3 px-3.5 py-3 rounded-lg text-xs font-bold text-[#1769E0] bg-[#EAF4FF] border border-[#CFE3FA] transition-all"
+                  >
+                    <Home className="w-4 h-4 text-[#1769E0]" />
+                    <span className="flex-1">Home</span>
+                    <span className="w-2 h-2 rounded-full bg-[#1769E0]" />
+                  </Link>
+
+                  {/* 2. About */}
+                  <a
+                    href="#about"
+                    onClick={() => setDashBarOpen(false)}
+                    className="flex items-center gap-3 px-3.5 py-3 rounded-lg text-xs font-semibold text-[#45627F] hover:text-[#0B2F55] hover:bg-[#F2F8FF] transition-all"
+                  >
+                    <Info className="w-4 h-4 text-[#45627F]" />
+                    <span>About</span>
+                  </a>
+
+                  {/* 3. Institutions */}
+                  <a
+                    href="#portals"
+                    onClick={() => setDashBarOpen(false)}
+                    className="flex items-center gap-3 px-3.5 py-3 rounded-lg text-xs font-semibold text-[#45627F] hover:text-[#0B2F55] hover:bg-[#F2F8FF] transition-all"
+                  >
+                    <Building2 className="w-4 h-4 text-[#45627F]" />
+                    <span>Institutions</span>
+                  </a>
+
+                  {/* 4. Features */}
+                  <a
+                    href="#features"
+                    onClick={() => setDashBarOpen(false)}
+                    className="flex items-center gap-3 px-3.5 py-3 rounded-lg text-xs font-semibold text-[#45627F] hover:text-[#0B2F55] hover:bg-[#F2F8FF] transition-all"
+                  >
+                    <Sparkles className="w-4 h-4 text-[#45627F]" />
+                    <span>Features</span>
+                  </a>
+
+                  {/* 5. Verify Credentials */}
+                  <a
+                    href="#verify"
+                    onClick={() => setDashBarOpen(false)}
+                    className="flex items-center gap-3 px-3.5 py-3 rounded-lg text-xs font-semibold text-[#45627F] hover:text-[#0B2F55] hover:bg-[#F2F8FF] transition-all"
+                  >
+                    <ShieldCheck className="w-4 h-4 text-[#16A36A]" />
+                    <span className="flex-1">Verify Credentials</span>
+                    <span className="text-[9px] font-bold uppercase tracking-wider text-[#16A36A] bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">
+                      Gov
+                    </span>
+                  </a>
+                </nav>
+              </div>
+
+              {/* Operational Portals Sub-Section */}
+              <div className="pt-2 border-t border-[#E5EDF6]">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#45627F] px-3 mb-2 block">
+                  Operational Portals
+                </span>
+                <div className="space-y-1">
+                  <Link
+                    href="/login"
+                    onClick={() => setDashBarOpen(false)}
+                    className="flex items-center gap-3 px-3.5 py-2 rounded-lg text-xs text-[#0B2F55] hover:bg-[#F2F8FF] transition-colors"
+                  >
+                    <GraduationCap className="w-4 h-4 text-[#1769E0]" />
+                    <span>Candidate Portal</span>
+                  </Link>
+                  <Link
+                    href="/login"
+                    onClick={() => setDashBarOpen(false)}
+                    className="flex items-center gap-3 px-3.5 py-2 rounded-lg text-xs text-[#0B2F55] hover:bg-[#F2F8FF] transition-colors"
+                  >
+                    <Building2 className="w-4 h-4 text-[#B45309]" />
+                    <span>Institution Portal</span>
+                  </Link>
+                  <Link
+                    href="/login"
+                    onClick={() => setDashBarOpen(false)}
+                    className="flex items-center gap-3 px-3.5 py-2 rounded-lg text-xs text-[#0B2F55] hover:bg-[#F2F8FF] transition-colors"
+                  >
+                    <Briefcase className="w-4 h-4 text-[#1769E0]" />
+                    <span>Employer Portal</span>
+                  </Link>
+                  <Link
+                    href="/login"
+                    onClick={() => setDashBarOpen(false)}
+                    className="flex items-center gap-3 px-3.5 py-2 rounded-lg text-xs text-[#0B2F55] hover:bg-[#F2F8FF] transition-colors"
+                  >
+                    <Landmark className="w-4 h-4 text-[#16A36A]" />
+                    <span>Government Portal</span>
+                  </Link>
+                </div>
+              </div>
+            </div>
+
+            {/* Dash Bar Bottom Actions */}
+            <div className="p-4 border-t border-[#E5EDF6] bg-[#F7FAFE] space-y-2">
               <Link
                 href="/login"
-                className="w-full h-10 rounded-lg border border-[#1769E0] text-[#1769E0] font-semibold text-xs flex items-center justify-center gap-1.5"
-                onClick={() => setMobileMenuOpen(false)}
+                onClick={() => setDashBarOpen(false)}
+                className="w-full h-10 rounded-lg bg-white border border-[#1769E0] text-[#1769E0] font-bold text-xs flex items-center justify-center gap-1.5 hover:bg-[#F2F8FF] transition-colors shadow-2xs"
               >
                 <span>Sign In</span>
               </Link>
               <Link
                 href="/register"
-                className="w-full h-10 rounded-lg bg-[#1769E0] text-white font-bold text-xs flex items-center justify-center gap-1.5"
-                onClick={() => setMobileMenuOpen(false)}
+                onClick={() => setDashBarOpen(false)}
+                className="w-full h-10 rounded-lg bg-[#1769E0] hover:bg-[#2563EB] text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-2xs transition-colors"
               >
                 <span>Register Candidate</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </div>
-          </div>
-        )}
-      </header>
+          </aside>
+        </div>
+      )}
 
       {/* Main Content Area */}
       <main className="flex-1">
