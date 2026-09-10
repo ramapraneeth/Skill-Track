@@ -3,55 +3,18 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import {
-  LayoutDashboard,
-  User,
-  BookOpen,
-  Briefcase,
-  FileCheck,
-  MoreHorizontal,
-  ChevronRight,
-  ChevronDown,
-  Target,
-  Zap,
-  Route,
-  GraduationCap,
-  Award,
-  Search,
-  BadgeCheck,
-  TrendingUp,
-  Sparkles,
-  Bell,
-  Settings,
-  HelpCircle,
-  BarChart3,
-  Calendar,
-  ClipboardCheck,
-  FileText,
-  Clock,
-  Folder,
-  MessageSquare,
-  Landmark,
-  ShieldCheck,
-  Building2,
-  AlertTriangle,
-  Users,
-  Layers,
-  PanelLeftClose,
-  PanelLeft,
-} from 'lucide-react';
 
 interface NavItem {
   label: string;
   href: string;
-  icon: React.ComponentType<{ className?: string }>;
+  icon: string;
   badge?: string;
 }
 
-interface NavSection {
+interface NavGroup {
   id: string;
   label: string;
-  icon?: React.ComponentType<{ className?: string }>;
+  icon: string;
   items: NavItem[];
 }
 
@@ -64,7 +27,6 @@ interface PortalSidebarProps {
 
 export const PortalSidebar: React.FC<PortalSidebarProps> = ({ currentRole, role, onSwitchRole }) => {
   const pathname = usePathname() || '';
-  const [isCollapsed, setIsCollapsed] = useState(false);
 
   // Deduce role strictly from current pathname prefix
   const pathRole = pathname?.startsWith('/trainer')
@@ -77,423 +39,341 @@ export const PortalSidebar: React.FC<PortalSidebarProps> = ({ currentRole, role,
 
   const normalizedRole = pathRole === 'student' ? 'learner' : pathRole;
 
-  // Track expanded groups per section
-  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
-    overview: true,
-    'learner-management': true,
-    learning: true,
-    assessment: true,
-    schedule: true,
-    'quality-analytics': true,
-    communication: true,
-    administration: true,
-    career: true,
-    applications: true,
-    more: true,
-    'programs-batches': true,
-    learners: true,
-    curriculum: true,
-    'assessment-certification': true,
-    'monitoring-reports': true,
+  // Collapsible accordion group state for Learner Portal
+  const [expandedGroup, setExpandedGroup] = useState<string | null>(() => {
+    if (pathname.startsWith('/learner/skills') || pathname.startsWith('/learner/skill-gap') || pathname.startsWith('/learner/roadmap') || pathname.startsWith('/learner/courses') || pathname.startsWith('/learner/certificates') || pathname.startsWith('/learner/my-learning')) {
+      return 'learning';
+    }
+    if (pathname.startsWith('/learner/progress') || pathname.startsWith('/learner/career-assistant') || (pathname.startsWith('/learner/opportunities') && !pathname.includes('type=internship'))) {
+      return 'career';
+    }
+    if (pathname.startsWith('/learner/opportunities') && pathname.includes('type=internship')) {
+      return 'applications';
+    }
+    if (pathname.startsWith('/learner/notifications') || pathname.startsWith('/learner/settings')) {
+      return 'more';
+    }
+    return null; // Default: Dashboard & My Profile active, groups collapsed
   });
 
-  const toggleSection = (sectionId: string) => {
-    setExpandedSections((prev) => ({
-      ...prev,
-      [sectionId]: !prev[sectionId],
-    }));
+  // Automatically keep the active route's group open when navigating
+  useEffect(() => {
+    if (pathname.startsWith('/learner/skills') || pathname.startsWith('/learner/skill-gap') || pathname.startsWith('/learner/roadmap') || pathname.startsWith('/learner/courses') || pathname.startsWith('/learner/certificates') || pathname.startsWith('/learner/my-learning')) {
+      setExpandedGroup('learning');
+    } else if (pathname.startsWith('/learner/progress') || pathname.startsWith('/learner/career-assistant') || (pathname.startsWith('/learner/opportunities') && !pathname.includes('type=internship'))) {
+      setExpandedGroup('career');
+    } else if (pathname.startsWith('/learner/opportunities') && pathname.includes('type=internship')) {
+      setExpandedGroup('applications');
+    } else if (pathname.startsWith('/learner/notifications') || pathname.startsWith('/learner/settings')) {
+      setExpandedGroup('more');
+    }
+  }, [pathname]);
+
+  const toggleGroup = (groupId: string) => {
+    setExpandedGroup((prev) => (prev === groupId ? null : groupId));
   };
 
-  // -------------------------------------------------------------
-  // 1. TRAINER NAVIGATION GROUPS (Expanded & Organized Subdivisions)
-  // -------------------------------------------------------------
-  const trainerSections: NavSection[] = [
-    {
-      id: 'overview',
-      label: 'Overview',
-      icon: LayoutDashboard,
-      items: [
-        { label: 'Dashboard', href: '/trainer/dashboard', icon: LayoutDashboard },
-      ],
-    },
-    {
-      id: 'learner-management',
-      label: 'Learner Management',
-      icon: Users,
-      items: [
-        { label: 'My Students', href: '/trainer/learners', icon: Users },
-        { label: 'Training Batches', href: '/trainer/batches', icon: Building2 },
-        { label: 'Daily Attendance', href: '/trainer/attendance', icon: ClipboardCheck },
-      ],
-    },
+  // Grouped Navigation for Student / Learner Portal
+  const learnerGroups: NavGroup[] = [
     {
       id: 'learning',
       label: 'Learning',
-      icon: BookOpen,
+      icon: '📚',
       items: [
-        { label: 'Courses & Syllabus', href: '/trainer/courses', icon: BookOpen },
-        { label: 'Curriculum Progress', href: '/trainer/progress', icon: Clock },
-        { label: 'Resource Library', href: '/trainer/materials', icon: Folder },
-      ],
-    },
-    {
-      id: 'assessment',
-      label: 'Assessment',
-      icon: FileText,
-      items: [
-        { label: 'Assessments', href: '/trainer/assessments', icon: FileText },
-        { label: 'Assessment Scores', href: '/trainer/assessment-results', icon: Award },
-      ],
-    },
-    {
-      id: 'schedule',
-      label: 'Schedule',
-      icon: Calendar,
-      items: [
-        { label: 'Class Schedule', href: '/trainer/schedule', icon: Calendar },
-      ],
-    },
-    {
-      id: 'quality-analytics',
-      label: 'Quality & Analytics',
-      icon: BarChart3,
-      items: [
-        { label: 'Quality & Feedback', href: '/trainer/feedback', icon: MessageSquare },
-        { label: 'Instruction Analytics', href: '/trainer/analytics', icon: BarChart3 },
-      ],
-    },
-    {
-      id: 'communication',
-      label: 'Communication',
-      icon: Bell,
-      items: [
-        { label: 'Circulars & Alerts', href: '/trainer/notifications', icon: Bell },
-      ],
-    },
-    {
-      id: 'administration',
-      label: 'Administration',
-      icon: Settings,
-      items: [
-        { label: 'My Profile & ToT', href: '/trainer/profile', icon: Award },
-        { label: 'Settings', href: '/trainer/settings', icon: Settings },
-      ],
-    },
-  ];
-
-  // -------------------------------------------------------------
-  // 2. GOVERNMENT TRAINING SECTION (Aligned Subdivisions)
-  // -------------------------------------------------------------
-  const governmentSections: NavSection[] = [
-    {
-      id: 'overview',
-      label: 'Overview',
-      icon: Landmark,
-      items: [
-        { label: 'Government Training Dashboard', href: '/government/dashboard', icon: Landmark },
-      ],
-    },
-    {
-      id: 'programs-batches',
-      label: 'Programs & Batches',
-      icon: Building2,
-      items: [
-        { label: 'Training Programs', href: '/government/courses', icon: Award },
-        { label: 'Government Batches', href: '/government/training-centers', icon: Building2 },
-        { label: 'Cohorts', href: '/government/schemes', icon: Layers },
-      ],
-    },
-    {
-      id: 'learners',
-      label: 'Learners',
-      icon: Users,
-      items: [
-        { label: 'Government Learners', href: '/government/learners', icon: Users },
-        { label: 'Attendance', href: '/government/training-centers', icon: ClipboardCheck },
-        { label: 'Learner Progress', href: '/government/course-intelligence', icon: TrendingUp },
-      ],
-    },
-    {
-      id: 'curriculum',
-      label: 'Curriculum',
-      icon: BookOpen,
-      items: [
-        { label: 'Government Courses', href: '/government/course-intelligence', icon: BookOpen },
-        { label: 'Syllabus', href: '/government/skills', icon: Target },
-        { label: 'Learning Resources', href: '/government/schemes', icon: Folder },
-      ],
-    },
-    {
-      id: 'assessment-certification',
-      label: 'Assessment & Certification',
-      icon: ShieldCheck,
-      items: [
-        { label: 'Assessments', href: '/government/alerts', icon: FileText },
-        { label: 'Assessment Results', href: '/government/reports', icon: Award },
-        { label: 'Certifications', href: '/government/schemes', icon: ShieldCheck },
-      ],
-    },
-    {
-      id: 'monitoring-reports',
-      label: 'Monitoring & Reports',
-      icon: BarChart3,
-      items: [
-        { label: 'Training Performance', href: '/government/employment', icon: BarChart3 },
-        { label: 'Outcome Tracking', href: '/government/geographic-analytics', icon: Route },
-        { label: 'Government Reports', href: '/government/reports', icon: FileText },
-      ],
-    },
-    {
-      id: 'communication',
-      label: 'Communication',
-      icon: Bell,
-      items: [
-        { label: 'Circulars', href: '/government/alerts', icon: Bell },
-        { label: 'Announcements', href: '/government/notifications', icon: MessageSquare },
-      ],
-    },
-    {
-      id: 'administration',
-      label: 'Administration',
-      icon: Settings,
-      items: [
-        { label: 'Government Trainers', href: '/government/trainers', icon: GraduationCap },
-        { label: 'Profile', href: '/government/settings', icon: User },
-        { label: 'Settings', href: '/government/settings', icon: Settings },
-      ],
-    },
-  ];
-
-  // -------------------------------------------------------------
-  // 3. LEARNER PORTAL NAVIGATION GROUPS
-  // -------------------------------------------------------------
-  const learnerSections: NavSection[] = [
-    {
-      id: 'overview',
-      label: 'Overview',
-      icon: LayoutDashboard,
-      items: [
-        { label: 'Dashboard', href: '/learner/dashboard', icon: LayoutDashboard },
-        { label: 'My Profile', href: '/learner/profile', icon: User },
-      ],
-    },
-    {
-      id: 'learning',
-      label: 'Learning',
-      icon: BookOpen,
-      items: [
-        { label: 'Skills & Proficiency', href: '/learner/skills', icon: Target },
-        { label: 'AI Skill Gap', href: '/learner/skill-gap', icon: Zap, badge: 'AI' },
-        { label: 'Learning Roadmap', href: '/learner/roadmap', icon: Route },
-        { label: 'Courses & Outcomes', href: '/learner/courses', icon: GraduationCap },
-        { label: 'Certificates (NSQF)', href: '/learner/certificates', icon: Award },
+        { label: 'Skills & Taxonomy', href: '/learner/skills', icon: '🎯' },
+        { label: 'AI Skill Gap', href: '/learner/skill-gap', icon: '⚡', badge: 'AI' },
+        { label: 'Learning Roadmap', href: '/learner/roadmap', icon: '🗺️' },
+        { label: 'Courses & Outcomes', href: '/learner/courses', icon: '📖' },
+        { label: 'Certificates (NSQF)', href: '/learner/certificates', icon: '📜' },
       ],
     },
     {
       id: 'career',
       label: 'Career',
-      icon: Briefcase,
+      icon: '💼',
       items: [
-        { label: 'Jobs & Openings', href: '/learner/opportunities', icon: Search },
-        { label: 'Placement Tracking', href: '/learner/opportunities?tab=applications', icon: BadgeCheck },
-        { label: 'Employment Outcomes', href: '/learner/progress', icon: TrendingUp },
-        { label: 'AI Career Assistant', href: '/learner/career-assistant', icon: Sparkles, badge: 'AI' },
+        { label: 'Jobs & Openings', href: '/learner/opportunities', icon: '💼' },
+        { label: 'Placement Tracking', href: '/learner/opportunities?tab=applications', icon: '🎯' },
+        { label: 'Employment Outcomes', href: '/learner/progress', icon: '📈' },
+        { label: 'AI Career Assistant', href: '/learner/career-assistant', icon: '🤖', badge: 'AI' },
       ],
     },
     {
       id: 'applications',
       label: 'Applications',
-      icon: FileCheck,
+      icon: '📋',
       items: [
-        { label: 'NAPS Internships', href: '/learner/opportunities?type=internship', icon: Briefcase },
-        { label: 'Active Applications', href: '/learner/opportunities?tab=applications', icon: FileCheck },
-        { label: 'Application Status', href: '/learner/opportunities?tab=status', icon: Clock },
+        { label: 'NAPS Internships', href: '/learner/opportunities?type=internship', icon: '🎓' },
+        { label: 'Active Applications', href: '/learner/opportunities?tab=applications', icon: '📨' },
+        { label: 'Application Status', href: '/learner/opportunities?tab=status', icon: '⏱️' },
       ],
     },
     {
       id: 'more',
       label: 'More',
-      icon: MoreHorizontal,
+      icon: '⚙️',
       items: [
-        { label: 'Notifications', href: '/learner/notifications', icon: Bell },
-        { label: 'Settings', href: '/learner/settings', icon: Settings },
-        { label: 'Help & Support', href: '/learner/settings?tab=help', icon: HelpCircle },
+        { label: 'Notifications', href: '/learner/notifications', icon: '🔔' },
+        { label: 'Settings', href: '/learner/settings', icon: '⚙️' },
+        { label: 'Help & Support', href: '/learner/settings?tab=help', icon: '❓' },
       ],
     },
   ];
 
-  const activeSections =
-    normalizedRole === 'trainer'
-      ? trainerSections
-      : normalizedRole === 'government'
-      ? governmentSections
-      : learnerSections;
+  // Flat Nav for Trainer
+  const trainerNavItems: NavItem[] = [
+    { label: 'Dashboard', href: '/trainer/dashboard', icon: '📊' },
+    { label: 'My Profile & ToT', href: '/trainer/profile', icon: '📜' },
+    { label: 'Courses & Syllabus', href: '/trainer/courses', icon: '📚' },
+    { label: 'Training Batches', href: '/trainer/batches', icon: '🏫' },
+    { label: 'My Students', href: '/trainer/learners', icon: '👥' },
+    { label: 'Class Schedule', href: '/trainer/schedule', icon: '📅' },
+    { label: 'Daily Attendance', href: '/trainer/attendance', icon: '📋' },
+    { label: 'Assessments', href: '/trainer/assessments', icon: '📝' },
+    { label: 'Assessment Scores', href: '/trainer/assessment-results', icon: '⭐' },
+    { label: 'Curriculum Progress', href: '/trainer/progress', icon: '⏱️' },
+    { label: 'Resource Library', href: '/trainer/materials', icon: '📁' },
+    { label: 'Quality & Feedback', href: '/trainer/feedback', icon: '💬' },
+    { label: 'Instruction Analytics', href: '/trainer/analytics', icon: '📈' },
+    { label: 'Circulars & Alerts', href: '/trainer/notifications', icon: '🔔' },
+    { label: 'Settings', href: '/trainer/settings', icon: '⚙️' },
+  ];
+
+  // Flat Nav for Government
+  const governmentNavItems: NavItem[] = [
+    { label: 'National Intelligence', href: '/government/dashboard', icon: '🏛️' },
+    { label: 'Skill Gap Heatmap', href: '/government/skill-gap', icon: '🗺️', badge: 'AI' },
+    { label: 'Course Intelligence', href: '/government/course-intelligence', icon: '📊', badge: 'Key' },
+    { label: 'Training Capacity', href: '/government/training-centers', icon: '🏫' },
+    { label: 'Placement Analytics', href: '/government/employment', icon: '💼' },
+    { label: 'Employment Outcomes', href: '/government/employment', icon: '📈' },
+    { label: 'Industry Skill Demand', href: '/government/skills', icon: '🎯' },
+    { label: 'Regional Analytics', href: '/government/geographic-analytics', icon: '📍' },
+    { label: 'Government Schemes', href: '/government/schemes', icon: '💰' },
+    { label: 'Candidate Registry', href: '/government/learners', icon: '👥' },
+    { label: 'ToT Trainer Registry', href: '/government/trainers', icon: '🎓' },
+    { label: 'Early Warning Radar', href: '/government/early-warning', icon: '🚨', badge: 'Alert' },
+    { label: 'Statutory Reports', href: '/government/reports', icon: '📑' },
+    { label: 'Audit & Compliance', href: '/government/alerts', icon: '🛡️' },
+    { label: 'System DPI Gateways', href: '/government/settings', icon: '⚙️' },
+  ];
 
   const roleTitle =
     normalizedRole === 'government'
       ? 'Government Authority'
       : normalizedRole === 'trainer'
       ? 'Accredited Trainer'
-      : 'Learner';
+      : 'Student / Candidate';
 
   return (
-    <aside
-      className={`${
-        isCollapsed ? 'w-16' : 'w-64'
-      } bg-white dark:bg-slate-900 border-r border-slate-200/80 dark:border-slate-800 flex flex-col justify-between shrink-0 transition-all duration-200 h-[calc(100vh-57px)] sticky top-[57px] overflow-y-auto`}
-    >
-      <div className="p-3 space-y-3">
-        {/* Active Portal Header & Collapse Toggle */}
-        <div className="flex items-center justify-between gap-1.5 pb-2 border-b border-slate-100 dark:border-slate-800">
-          {!isCollapsed && (
-            <div className="px-1 min-w-0">
-              <span className="text-[9px] uppercase font-bold text-slate-400 dark:text-slate-500 tracking-wider block leading-tight">
-                Active Portal
-              </span>
-              <span className="text-xs font-bold text-[#0B192C] dark:text-slate-100 truncate block">
-                {roleTitle}
-              </span>
-            </div>
-          )}
-
-          <button
-            type="button"
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            className="p-1.5 rounded-md text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors mx-auto"
-            title={isCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
-          >
-            {isCollapsed ? <PanelLeft className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
-          </button>
-        </div>
-
-        {/* Grouped Subdivisions Navigation */}
-        <nav className="space-y-4">
-          {activeSections.map((section) => {
-            const isSectionOpen = expandedSections[section.id] ?? true;
-
-            return (
-              <div key={section.id} className="space-y-1">
-                {/* Section Header (Hidden or compact in collapsed mode) */}
-                {!isCollapsed ? (
-                  <button
-                    type="button"
-                    onClick={() => toggleSection(section.id)}
-                    className="w-full flex items-center justify-between px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors group"
-                  >
-                    <span>{section.label}</span>
-                    <span className="text-slate-400 group-hover:text-slate-600 transition-transform">
-                      {isSectionOpen ? (
-                        <ChevronDown className="w-3 h-3" />
-                      ) : (
-                        <ChevronRight className="w-3 h-3" />
-                      )}
-                    </span>
-                  </button>
-                ) : (
-                  <div className="h-1 w-full border-t border-slate-100 dark:border-slate-800 my-1" />
-                )}
-
-                {/* Section Items */}
-                {(isCollapsed || isSectionOpen) && (
-                  <div className="space-y-0.5">
-                    {section.items.map((item) => {
-                      const Icon = item.icon;
-                      const isActive =
-                        pathname === item.href ||
-                        (item.href !== '/trainer/dashboard' &&
-                          item.href !== '/government/dashboard' &&
-                          item.href !== '/learner/dashboard' &&
-                          pathname.startsWith(item.href));
-
-                      return (
-                        <Link
-                          key={item.href + item.label}
-                          href={item.href}
-                          title={isCollapsed ? item.label : undefined}
-                          className={`flex items-center ${
-                            isCollapsed ? 'justify-center p-2' : 'justify-between px-2.5 py-1.5'
-                          } rounded-lg text-xs font-medium transition-all ${
-                            isActive
-                              ? 'bg-blue-50 dark:bg-blue-950/60 text-[#1D4ED8] dark:text-blue-400 font-semibold border-l-2 border-[#1D4ED8]'
-                              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200'
-                          }`}
-                        >
-                          <div className="flex items-center gap-2.5 min-w-0">
-                            <Icon
-                              className={`w-4 h-4 shrink-0 ${
-                                isActive
-                                  ? 'text-[#1D4ED8] dark:text-blue-400'
-                                  : 'text-slate-500 dark:text-slate-400'
-                              }`}
-                            />
-                            {!isCollapsed && <span className="truncate">{item.label}</span>}
-                          </div>
-
-                          {!isCollapsed && item.badge && (
-                            <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-blue-100 dark:bg-blue-950 text-[#1D4ED8] dark:text-blue-300 uppercase tracking-wider">
-                              {item.badge}
-                            </span>
-                          )}
-                        </Link>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </nav>
-      </div>
-
-      {/* Compact Portal Role Switcher Dock at Bottom */}
-      <div className="p-3 border-t border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-950/70">
-        {!isCollapsed && (
-          <div className="mb-2 flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-              Switch Role
+    <aside className="w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col justify-between shrink-0 transition-colors h-[calc(100vh-65px)] sticky top-[65px] overflow-y-auto">
+      <div className="p-3 space-y-2.5">
+        {/* Compact Active Portal Status Card */}
+        <div className="px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 flex items-center justify-between">
+          <div>
+            <span className="text-[9px] uppercase font-bold text-slate-400 dark:text-slate-500 tracking-wider block leading-tight">
+              Active Portal
             </span>
-            <span className="text-[9px] font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-1.5 py-0.2 rounded">
-              Verified
+            <span className="text-xs font-bold text-[#0B192C] dark:text-slate-100 leading-tight">
+              {roleTitle}
             </span>
           </div>
-        )}
+          <div className="flex items-center gap-1.5 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/80 dark:border-emerald-800/60 px-2 py-0.5 rounded-full">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-[10px] font-semibold text-emerald-700 dark:text-emerald-400">Online</span>
+          </div>
+        </div>
 
-        <div className={`grid ${isCollapsed ? 'grid-cols-1 gap-1' : 'grid-cols-3 gap-1'} text-center`}>
+        {/* Student / Learner Portal: Hierarchical Navigation */}
+        {normalizedRole === 'learner' ? (
+          <nav className="space-y-1">
+            {/* 1. Dashboard (Direct) */}
+            <Link
+              href="/learner/dashboard"
+              className={`flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
+                pathname === '/learner/dashboard'
+                  ? 'bg-blue-50 dark:bg-blue-950/60 text-[#1D4ED8] dark:text-blue-400 font-bold border-l-3 border-[#1D4ED8]'
+                  : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200'
+              }`}
+            >
+              <div className="flex items-center gap-2.5">
+                <span className="text-sm leading-none shrink-0">📊</span>
+                <span>Dashboard</span>
+              </div>
+            </Link>
+
+            {/* 2. My Profile (Direct) */}
+            <Link
+              href="/learner/profile"
+              className={`flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
+                pathname === '/learner/profile'
+                  ? 'bg-blue-50 dark:bg-blue-950/60 text-[#1D4ED8] dark:text-blue-400 font-bold border-l-3 border-[#1D4ED8]'
+                  : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200'
+              }`}
+            >
+              <div className="flex items-center gap-2.5">
+                <span className="text-sm leading-none shrink-0">👤</span>
+                <span>My Profile</span>
+              </div>
+            </Link>
+
+            {/* 3. Collapsible Groups: Learning, Career, Applications, More */}
+            {learnerGroups.map((group) => {
+              const isOpen = expandedGroup === group.id;
+              const hasActiveChild = group.items.some(
+                (item) => pathname === item.href || (item.href.includes('?') && pathname === item.href.split('?')[0])
+              );
+
+              return (
+                <div key={group.id} className="pt-0.5">
+                  {/* Group Header Trigger */}
+                  <button
+                    type="button"
+                    onClick={() => toggleGroup(group.id)}
+                    className={`flex items-center justify-between w-full px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
+                      hasActiveChild
+                        ? 'text-[#1D4ED8] dark:text-blue-400 font-bold bg-slate-50/70 dark:bg-slate-800/40'
+                        : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <span className="text-sm leading-none shrink-0">{group.icon}</span>
+                      <span>{group.label}</span>
+                    </div>
+                    <svg
+                      className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${
+                        isOpen ? 'rotate-90 text-[#1D4ED8]' : ''
+                      }`}
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+
+                  {/* Collapsible Sub-Items Container */}
+                  <div
+                    className={`transition-all duration-200 ease-in-out overflow-hidden ${
+                      isOpen ? 'max-h-80 opacity-100 mt-0.5' : 'max-h-0 opacity-0 pointer-events-none'
+                    }`}
+                  >
+                    <div className="ml-4 pl-2.5 border-l border-slate-200 dark:border-slate-800 space-y-0.5 py-0.5">
+                      {group.items.map((subItem) => {
+                        const isSubActive =
+                          pathname === subItem.href ||
+                          (subItem.href.includes('?') && pathname === subItem.href.split('?')[0]);
+
+                        return (
+                          <Link
+                            key={subItem.label}
+                            href={subItem.href}
+                            className={`flex items-center justify-between px-2.5 py-1.5 rounded-md text-[12px] font-medium transition-colors ${
+                              isSubActive
+                                ? 'bg-blue-50 dark:bg-blue-950/60 text-[#1D4ED8] dark:text-blue-400 font-bold'
+                                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:text-slate-300'
+                            }`}
+                          >
+                            <div className="flex items-center gap-2 truncate">
+                              <span className="text-xs leading-none shrink-0">{subItem.icon}</span>
+                              <span className="truncate">{subItem.label}</span>
+                            </div>
+                            {subItem.badge && (
+                              <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 uppercase">
+                                {subItem.badge}
+                              </span>
+                            )}
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </nav>
+        ) : (
+          /* Trainer & Government Navigation (Preserved) */
+          <nav className="space-y-0.5">
+            {(normalizedRole === 'government' ? governmentNavItems : trainerNavItems).map((item) => {
+              const isActive =
+                pathname === item.href ||
+                (item.href !== '/trainer/dashboard' &&
+                  item.href !== '/government/dashboard' &&
+                  pathname.startsWith(item.href));
+              return (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  className={`flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition-all group ${
+                    isActive
+                      ? 'bg-blue-50 dark:bg-blue-950/60 text-[#1D4ED8] dark:text-blue-400 font-bold shadow-2xs border-l-3 border-[#1D4ED8]'
+                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-sm leading-none shrink-0">{item.icon}</span>
+                    <span className="truncate">{item.label}</span>
+                  </div>
+                  {item.badge && (
+                    <span
+                      className={`text-[9px] font-bold px-1.5 py-0.2 rounded uppercase ${
+                        item.badge === 'AI'
+                          ? 'bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300'
+                          : item.badge === 'Alert'
+                          ? 'bg-red-100 dark:bg-red-950 text-red-700 dark:text-red-300'
+                          : 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300'
+                      }`}
+                    >
+                      {item.badge}
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
+          </nav>
+        )}
+      </div>
+
+      {/* Clean SIH Role Switcher Dock */}
+      <div className="p-3 border-t border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-950/70">
+        <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1.5">
+          SIH Role Switcher
+        </span>
+        <div className="grid grid-cols-3 gap-1 text-[11px] font-semibold">
           <Link
             href="/learner/dashboard"
             onClick={() => onSwitchRole?.('learner')}
-            title="Student Portal"
-            className={`py-1.5 px-1 rounded text-[11px] font-semibold transition-all ${
+            className={`py-1 text-center rounded border transition-colors ${
               normalizedRole === 'learner'
-                ? 'bg-white dark:bg-slate-800 text-[#1D4ED8] dark:text-blue-400 shadow-2xs font-bold border border-slate-200 dark:border-slate-700'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                ? 'bg-[#1D4ED8] text-white border-[#1D4ED8]'
+                : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100'
             }`}
           >
-            {isCollapsed ? 'Std' : 'Student'}
+            Student
           </Link>
           <Link
             href="/trainer/dashboard"
             onClick={() => onSwitchRole?.('trainer')}
-            title="Trainer Portal"
-            className={`py-1.5 px-1 rounded text-[11px] font-semibold transition-all ${
+            className={`py-1 text-center rounded border transition-colors ${
               normalizedRole === 'trainer'
-                ? 'bg-white dark:bg-slate-800 text-[#1D4ED8] dark:text-blue-400 shadow-2xs font-bold border border-slate-200 dark:border-slate-700'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                ? 'bg-[#1D4ED8] text-white border-[#1D4ED8]'
+                : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100'
             }`}
           >
-            {isCollapsed ? 'Trn' : 'Trainer'}
+            Trainer
           </Link>
           <Link
             href="/government/dashboard"
             onClick={() => onSwitchRole?.('government')}
-            title="Government Portal"
-            className={`py-1.5 px-1 rounded text-[11px] font-semibold transition-all ${
+            className={`py-1 text-center rounded border transition-colors ${
               normalizedRole === 'government'
-                ? 'bg-white dark:bg-slate-800 text-[#1D4ED8] dark:text-blue-400 shadow-2xs font-bold border border-slate-200 dark:border-slate-700'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                ? 'bg-[#1D4ED8] text-white border-[#1D4ED8]'
+                : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100'
             }`}
           >
-            {isCollapsed ? 'Gov' : 'Govt'}
+            Govt
           </Link>
         </div>
       </div>
