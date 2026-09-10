@@ -17,6 +17,7 @@ import {
   Info,
   ChevronRight,
   ShieldCheck,
+  Compass,
 } from 'lucide-react';
 import { PageHeader } from '@/components/ui/PageHeader';
 import {
@@ -25,15 +26,20 @@ import {
   CareerMatchResult,
   LearnerProfile,
 } from '@/lib/sidh-store';
+import { getAllStreams, StreamDef, CareerProfileDef } from '@/lib/career-registry';
+import AICareerDiscoveryModal from '@/components/AICareerDiscoveryModal';
 
 export default function LearnerCareersPage() {
   const [learner, setLearner] = useState<LearnerProfile | null>(null);
   const [recommendations, setRecommendations] = useState<CareerMatchResult[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedSector, setSelectedSector] = useState('All');
+  const [selectedStream, setSelectedStream] = useState('All');
   const [selectedMatch, setSelectedMatch] = useState<CareerMatchResult | null>(null);
+  const [isDiscoveryOpen, setIsDiscoveryOpen] = useState(false);
 
-  useEffect(() => {
+  const streams = getAllStreams();
+
+  const loadData = () => {
     const profile = getLearner();
     setLearner(profile);
     const recs = getCareerRecommendations(profile);
@@ -41,37 +47,56 @@ export default function LearnerCareersPage() {
     if (recs.length > 0) {
       setSelectedMatch(recs[0]);
     }
+  };
+
+  useEffect(() => {
+    loadData();
   }, []);
 
   if (!learner) return null;
 
-  const sectors = ['All', 'IT-ITeS & Software', 'BFSI & IT Analytics', 'Cloud & Infrastructure', 'Cybersecurity & Defense', 'Artificial Intelligence & Deep Tech'];
-
   const filtered = recommendations.filter((rec) => {
-    const matchesSector = selectedSector === 'All' || rec.post.sector === selectedSector;
+    const streamCode = rec.post.streamCode || '';
+    const matchesStream =
+      selectedStream === 'All' ||
+      streamCode === selectedStream ||
+      rec.post.sector.toLowerCase().includes(selectedStream.toLowerCase());
+
     const matchesSearch =
       rec.postName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       rec.post.sector.toLowerCase().includes(searchQuery.toLowerCase()) ||
       rec.matchingSkills.some((s) => s.toLowerCase().includes(searchQuery.toLowerCase())) ||
       rec.missingSkills.some((s) => s.toLowerCase().includes(searchQuery.toLowerCase()));
-    return matchesSector && matchesSearch;
+
+    return matchesStream && matchesSearch;
   });
+
+  const handleCareerAdopted = (career: CareerProfileDef, stream: StreamDef) => {
+    loadData();
+  };
 
   return (
     <div className="space-y-6">
       {/* Page Header */}
       <PageHeader
-        title="Career Recommendation Engine"
-        subtitle="Automated career role matching based on your live academic qualifications, verified skills, certifications, and project portfolio"
-        badge="Government Skilling & Employment System"
+        title="Universal Career Recommendation Engine"
+        subtitle="Automated career matching across all disciplines (ECE, Civil, Commerce, Mechanical, Pharmacy, Agri, Hospitality, Law & IT) based on live qualifications and skills"
+        badge="Universal Multi-Stream Registry"
         actions={
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              onClick={() => setIsDiscoveryOpen(true)}
+              className="h-9 px-4 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
+            >
+              <Compass className="w-4 h-4" />
+              <span>AI Career Discovery</span>
+            </button>
             <Link
               href="/learner/profile"
               className="h-9 px-3.5 rounded-lg border border-[#CBD5E1] bg-white hover:bg-slate-50 text-[#0B1B30] text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-2xs"
             >
               <span>👤</span>
-              <span>Edit Employability Profile</span>
+              <span>Edit Profile</span>
             </Link>
             <Link
               href="/learner/skill-gap"
@@ -104,15 +129,15 @@ export default function LearnerCareersPage() {
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 pt-3 text-xs">
           <div className="p-2.5 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0]">
-            <span className="text-[10px] font-bold text-[#64748B] block">Degree & Course</span>
-            <span className="font-bold text-[#0F172A] truncate block mt-0.5">{learner.qualification}</span>
-            <span className="text-[10px] text-slate-500">{learner.branch}</span>
+            <span className="text-[10px] font-bold text-[#64748B] block">Discipline & Degree</span>
+            <span className="font-bold text-[#0F172A] truncate block mt-0.5">{learner.branch || 'General'}</span>
+            <span className="text-[10px] text-slate-500">{learner.qualification}</span>
           </div>
 
           <div className="p-2.5 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0]">
             <span className="text-[10px] font-bold text-[#64748B] block">Academic CGPA</span>
             <span className="font-mono font-bold text-base text-[#2857D9] block mt-0.5">
-              {learner.academicDetails?.cgpa || 8.7}
+              {learner.academicDetails?.cgpa || 8.2}
             </span>
             <span className="text-[10px] text-emerald-700 font-semibold">Eligibility Met</span>
           </div>
@@ -123,7 +148,7 @@ export default function LearnerCareersPage() {
               {learner.skills.length}
             </span>
             <span className="text-[10px] text-slate-500">
-              {learner.skills.filter((s) => s.proficiencyLevel === 'Advanced').length} Advanced
+              {learner.skills.filter((s) => s.proficiencyLevel === 'Advanced' || (s.proficiency || 0) >= 80).length} Advanced
             </span>
           </div>
 
@@ -132,7 +157,7 @@ export default function LearnerCareersPage() {
             <span className="font-mono font-bold text-base text-[#0B1B30] block mt-0.5">
               {learner.certifications?.length || 0}
             </span>
-            <span className="text-[10px] text-emerald-700 font-semibold">Verified NCVET</span>
+            <span className="text-[10px] text-emerald-700 font-semibold">Verified</span>
           </div>
 
           <div className="p-2.5 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0]">
@@ -140,43 +165,53 @@ export default function LearnerCareersPage() {
             <span className="font-mono font-bold text-base text-[#0B1B30] block mt-0.5">
               {learner.projects?.length || 0}
             </span>
-            <span className="text-[10px] text-slate-500">Industry Capstones</span>
+            <span className="text-[10px] text-slate-500">Industry Evidence</span>
           </div>
 
           <div className="p-2.5 rounded-lg bg-[#EFF6FF] border border-blue-200">
             <span className="text-[10px] font-bold text-[#2857D9] block">Target Career Role</span>
-            <span className="font-bold text-[#0B1B30] truncate block mt-0.5">{learner.targetRole}</span>
+            <span className="font-bold text-[#0B1B30] truncate block mt-0.5">{learner.targetRole || 'Select in Profile'}</span>
             <span className="text-[10px] text-blue-700 font-medium">Primary Benchmark</span>
           </div>
         </div>
       </div>
 
-      {/* Filter and Search Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-2 flex-wrap text-xs">
-          <span className="text-[#64748B] font-semibold flex items-center gap-1">
-            <Filter className="w-3.5 h-3.5" /> Sector:
+      {/* Stream Tabs & Search Bar */}
+      <div className="space-y-3">
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
+          <span className="text-[#64748B] font-semibold flex items-center gap-1 shrink-0 mr-1">
+            <Filter className="w-3.5 h-3.5" /> Discipline:
           </span>
-          {sectors.map((sec) => (
+          <button
+            onClick={() => setSelectedStream('All')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
+              selectedStream === 'All'
+                ? 'bg-slate-900 text-white shadow-2xs'
+                : 'bg-white border border-[#CBD5E1] text-[#475569] hover:bg-slate-50'
+            }`}
+          >
+            All Streams
+          </button>
+          {streams.map((s) => (
             <button
-              key={sec}
-              onClick={() => setSelectedSector(sec)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                selectedSector === sec
-                  ? 'bg-[#0B1B30] text-white shadow-xs'
+              key={s.code}
+              onClick={() => setSelectedStream(s.code)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
+                selectedStream === s.code
+                  ? 'bg-[#1D4ED8] text-white shadow-2xs'
                   : 'bg-white border border-[#CBD5E1] text-[#475569] hover:bg-slate-50'
               }`}
             >
-              {sec}
+              {s.name} ({s.code})
             </button>
           ))}
         </div>
 
-        <div className="relative w-full sm:w-64">
+        <div className="relative w-full max-w-md">
           <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
           <input
             type="text"
-            placeholder="Search roles or skills..."
+            placeholder="Search career titles, disciplines or required skills..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full h-9 pl-9 pr-3 text-xs border border-[#CBD5E1] rounded-lg bg-white focus:border-[#2857D9] outline-none"
@@ -189,18 +224,20 @@ export default function LearnerCareersPage() {
         <div className="flex items-center justify-between pb-3">
           <div className="flex items-center gap-2">
             <Briefcase className="w-4 h-4 text-[#2857D9]" />
-            <h2 className="text-sm font-bold text-[#0B1B30]">
-              Recommended Career Posts ({filtered.length})
+            <h2 className="text-sm font-bold text-[#0B192C]">
+              Career Paths & Match Evaluations ({filtered.length})
             </h2>
           </div>
-          <span className="text-xs text-[#64748B]">Ranked by composite employability match score</span>
+          <span className="text-xs text-[#64748B]">Ranked by 7-factor composite employability score</span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {filtered.map((rec) => {
             const isSelected = selectedMatch?.post.id === rec.post.id;
-            const isTarget = learner.targetRole.toLowerCase().includes(rec.postName.toLowerCase()) ||
-                             rec.postName.toLowerCase().includes(learner.targetRole.toLowerCase());
+            const isTarget =
+              learner.targetRole &&
+              (learner.targetRole.toLowerCase().includes(rec.postName.toLowerCase()) ||
+                rec.postName.toLowerCase().includes(learner.targetRole.toLowerCase()));
 
             return (
               <div
@@ -216,24 +253,24 @@ export default function LearnerCareersPage() {
                   <div className="flex items-start justify-between gap-3 pb-3 border-b border-[#E2E8F0]">
                     <div>
                       <div className="flex items-center gap-2">
-                        <h3 className="text-base font-bold text-[#0B1B30] hover:text-[#2857D9] transition-colors">
+                        <h3 className="text-base font-bold text-[#0B192C] hover:text-[#2857D9] transition-colors">
                           {rec.postName}
                         </h3>
                         {isTarget && (
                           <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#EFF6FF] text-[#2857D9] border border-blue-200">
-                            Target Role
+                            Target Career
                           </span>
                         )}
                       </div>
                       <span className="text-[11px] text-[#64748B] block mt-0.5">
-                        {rec.post.sector} • {rec.post.salaryRange} • {rec.post.openings} active openings
+                        {rec.post.streamCode ? `${rec.post.streamCode} • ` : ''}{rec.post.sector} • {rec.post.salaryRange} • {rec.post.openings} active openings
                       </span>
                     </div>
 
                     {/* Match Score Indicator */}
                     <div className="text-right shrink-0">
                       <div className="flex items-baseline justify-end gap-1">
-                        <span className="text-2xl font-bold font-mono text-[#0B1B30]">
+                        <span className="text-2xl font-bold font-mono text-[#0B192C]">
                           {rec.matchPercentage}%
                         </span>
                         <span className="text-[10px] text-slate-400 font-semibold">Match</span>
@@ -252,10 +289,33 @@ export default function LearnerCareersPage() {
                     </div>
                   </div>
 
+                  {/* Transparent Explanations (Checks & Warnings) */}
+                  {rec.multiFactor && (
+                    <div className="py-2.5 border-b border-[#E2E8F0] space-y-1">
+                      <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                        7-Factor Match Diagnostic
+                      </div>
+                      <div className="space-y-0.5">
+                        {rec.multiFactor.explanations.positive.slice(0, 3).map((exp, idx) => (
+                          <div key={idx} className="flex items-center gap-1.5 text-[11px] text-emerald-700">
+                            <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                            <span>{exp}</span>
+                          </div>
+                        ))}
+                        {rec.multiFactor.explanations.advisory.slice(0, 2).map((adv, idx) => (
+                          <div key={idx} className="flex items-center gap-1.5 text-[11px] text-amber-700">
+                            <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                            <span>{adv}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   {/* Required Qualification */}
-                  <div className="py-3 text-xs border-b border-[#E2E8F0]">
+                  <div className="py-2.5 text-xs border-b border-[#E2E8F0]">
                     <span className="text-[10px] uppercase font-bold text-[#64748B] block tracking-wider">
-                      Required Qualification
+                      Academic Eligibility Requirement
                     </span>
                     <p className="text-xs text-[#1E293B] font-medium mt-0.5">
                       {rec.requiredQualification}
@@ -312,7 +372,7 @@ export default function LearnerCareersPage() {
                 <div className="pt-3 border-t border-[#E2E8F0] flex items-center justify-between gap-2">
                   <Link
                     href={`/learner/skill-gap?post=${rec.post.id}`}
-                    className="flex-1 h-9 rounded-lg bg-[#2857D9] hover:bg-[#1E42B0] text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shadow-xs"
+                    className="flex-1 h-9 rounded-lg bg-[#2857D9] hover:bg-[#1E40AF] text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shadow-xs"
                   >
                     <span>View Skill Gap</span>
                     <ArrowRight className="w-3.5 h-3.5" />
@@ -320,9 +380,9 @@ export default function LearnerCareersPage() {
 
                   <Link
                     href={`/learner/opportunities?search=${encodeURIComponent(rec.postName)}`}
-                    className="h-9 px-3 rounded-lg border border-[#CBD5E1] hover:bg-slate-50 text-[#0B1B30] text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                    className="h-9 px-3.5 rounded-lg border border-[#CBD5E1] hover:bg-slate-50 text-[#0B1B30] text-xs font-semibold flex items-center gap-1.5 transition-colors"
                   >
-                    <span>View Openings</span>
+                    <span>View Jobs</span>
                   </Link>
                 </div>
               </div>
@@ -335,17 +395,27 @@ export default function LearnerCareersPage() {
       <div className="bg-[#F8FAFC] border border-[#CBD5E1] rounded-xl p-5 text-xs text-[#475569] space-y-2">
         <div className="flex items-center gap-2 text-[#0B1B30] font-bold">
           <Info className="w-4 h-4 text-[#2857D9]" />
-          <span>How the Career Recommendation Engine Calculates Match Scores</span>
+          <span>Universal Multi-Factor Career Matching Methodology</span>
         </div>
         <p className="leading-relaxed">
-          The national recommendation engine applies weighted multi-attribute synthesis: 
-          <strong> Technical Competencies & Proficiency Levels (75%)</strong>, 
-          <strong> NCVET-Accredited Certifications (+12%)</strong>, 
-          <strong> Applied Capstone Projects (+10%)</strong>, and 
-          <strong> Academic CGPA Thresholds (+5%)</strong>. 
-          Updating your profile with new skills, certifications, or projects automatically recalculates these scores in real time.
+          The national recommendation engine synthesizes 7 distinct dimensions:
+          <strong> Degree Qualification (15 pts)</strong>,
+          <strong> Academic Branch / Discipline (20 pts)</strong>,
+          <strong> Core Domain Skills & Proficiency (35 pts)</strong>,
+          <strong> Relevant Experience / Internships (10 pts)</strong>,
+          <strong> Professional Certifications (10 pts)</strong>,
+          <strong> Career Interests (5 pts)</strong>, and
+          <strong> Job Market Demand (5 pts)</strong>.
+          It covers Engineering, Commerce, Science, Healthcare, Hospitality, Law, and Technology equally with zero hardcoded software bias.
         </p>
       </div>
+
+      {/* AI Career Discovery Modal */}
+      <AICareerDiscoveryModal
+        isOpen={isDiscoveryOpen}
+        onClose={() => setIsDiscoveryOpen(false)}
+        onCareerAdopted={handleCareerAdopted}
+      />
     </div>
   );
 }

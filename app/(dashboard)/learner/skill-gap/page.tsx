@@ -31,24 +31,36 @@ import {
   SkillProficiencyLevel,
   LearnerProfile,
 } from '@/lib/sidh-store';
+import {
+  resolveLearnerCareerContext,
+  calculateMultiFactorMatch,
+  getAllStreams,
+  getCareerById,
+} from '@/lib/career-registry';
 
 function StudentSkillGapContent() {
   const searchParams = useSearchParams();
   const requestedPostId = searchParams.get('post');
 
   const [learner, setLearner] = useState<LearnerProfile | null>(null);
-  const [selectedPostId, setSelectedPostId] = useState<string>(requestedPostId || 'post-python');
+  const [selectedPostId, setSelectedPostId] = useState<string>(() => {
+    if (requestedPostId) return requestedPostId;
+    const profile = getLearner();
+    const ctx = resolveLearnerCareerContext(profile);
+    return ctx.career.id;
+  });
+  const [streamFilter, setStreamFilter] = useState<string>('All');
   const [activeFilter, setActiveFilter] = useState<'All' | GapCategory>('All');
   const [learningStarted, setLearningStarted] = useState<string | null>(null);
 
   useEffect(() => {
     const profile = getLearner();
     setLearner(profile);
-  }, []);
-
-  useEffect(() => {
     if (requestedPostId) {
       setSelectedPostId(requestedPostId);
+    } else {
+      const ctx = resolveLearnerCareerContext(profile);
+      setSelectedPostId(ctx.career.id);
     }
   }, [requestedPostId]);
 
@@ -178,8 +190,35 @@ function StudentSkillGapContent() {
           </span>
         </div>
 
+        {/* Stream Filter Pills */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
+          <button
+            onClick={() => setStreamFilter('All')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
+              streamFilter === 'All'
+                ? 'bg-slate-900 text-white shadow-2xs'
+                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+            }`}
+          >
+            All Disciplines
+          </button>
+          {getAllStreams().map((s) => (
+            <button
+              key={s.code}
+              onClick={() => setStreamFilter(s.code)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
+                streamFilter === s.code
+                  ? 'bg-[#1D4ED8] text-white shadow-2xs'
+                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+              }`}
+            >
+              {s.name} ({s.code})
+            </button>
+          ))}
+        </div>
+
         <div className="flex flex-wrap gap-2 pt-1">
-          {CAREER_POSTS.map((post) => {
+          {CAREER_POSTS.filter((p) => streamFilter === 'All' || p.streamCode === streamFilter).map((post) => {
             const isSelected = post.id === selectedPostId;
             return (
               <button
@@ -228,7 +267,7 @@ function StudentSkillGapContent() {
             <div className="w-full sm:w-44">
               <div className="flex justify-between items-baseline mb-1">
                 <span className="text-[10px] uppercase font-bold text-[#64748B] tracking-wider">
-                  Overall Skill Match
+                  Career Match Score
                 </span>
                 <span className="font-mono font-bold text-base text-[#2857D9]">
                   {matchResult.matchPercentage}%
@@ -261,6 +300,103 @@ function StudentSkillGapContent() {
             </div>
           </div>
         </div>
+
+        {/* 7-Factor Transparent Match Breakdown */}
+        {matchResult.multiFactor && (
+          <div className="p-4 rounded-xl bg-slate-50/70 border border-slate-200 space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-slate-800 uppercase tracking-wide flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-[#1D4ED8]" />
+                7-Factor Transparent Match Evaluation
+              </span>
+              <span className="text-xs font-mono font-bold text-[#1D4ED8]">
+                {matchResult.multiFactor.totalScore} / 100 PTS
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2.5 text-center">
+              <div className="p-2.5 rounded-lg bg-white border border-slate-200">
+                <span className="text-[10px] font-bold text-slate-500 block">Education</span>
+                <span className="text-xs font-extrabold text-slate-800 font-mono mt-0.5 block">
+                  {matchResult.multiFactor.factors.educationMatch.score} / {matchResult.multiFactor.factors.educationMatch.max}
+                </span>
+                <span className="text-[9px] text-emerald-700 font-medium">
+                  {matchResult.multiFactor.factors.educationMatch.passed ? '✓ Matched' : 'Developing'}
+                </span>
+              </div>
+
+              <div className="p-2.5 rounded-lg bg-white border border-slate-200">
+                <span className="text-[10px] font-bold text-slate-500 block">Branch</span>
+                <span className="text-xs font-extrabold text-slate-800 font-mono mt-0.5 block">
+                  {matchResult.multiFactor.factors.branchMatch.score} / {matchResult.multiFactor.factors.branchMatch.max}
+                </span>
+                <span className="text-[9px] text-emerald-700 font-medium">
+                  {matchResult.multiFactor.factors.branchMatch.passed ? '✓ Matched' : 'Aligned'}
+                </span>
+              </div>
+
+              <div className="p-2.5 rounded-lg bg-white border border-slate-200">
+                <span className="text-[10px] font-bold text-slate-500 block">Skills</span>
+                <span className="text-xs font-extrabold text-[#1D4ED8] font-mono mt-0.5 block">
+                  {matchResult.multiFactor.factors.skillMatch.score} / {matchResult.multiFactor.factors.skillMatch.max}
+                </span>
+                <span className="text-[9px] text-slate-600 font-medium">
+                  {matchResult.multiFactor.factors.skillMatch.matchedCount} of {matchResult.multiFactor.factors.skillMatch.totalCount}
+                </span>
+              </div>
+
+              <div className="p-2.5 rounded-lg bg-white border border-slate-200">
+                <span className="text-[10px] font-bold text-slate-500 block">Experience</span>
+                <span className="text-xs font-extrabold text-slate-800 font-mono mt-0.5 block">
+                  {matchResult.multiFactor.factors.experienceMatch.score} / {matchResult.multiFactor.factors.experienceMatch.max}
+                </span>
+                <span className="text-[9px] text-slate-600 font-medium">Fresh Graduate</span>
+              </div>
+
+              <div className="p-2.5 rounded-lg bg-white border border-slate-200">
+                <span className="text-[10px] font-bold text-slate-500 block">Certs</span>
+                <span className="text-xs font-extrabold text-slate-800 font-mono mt-0.5 block">
+                  {matchResult.multiFactor.factors.certificationMatch.score} / {matchResult.multiFactor.factors.certificationMatch.max}
+                </span>
+                <span className="text-[9px] text-amber-700 font-medium">
+                  {matchResult.multiFactor.factors.certificationMatch.matchedCount} Linked
+                </span>
+              </div>
+
+              <div className="p-2.5 rounded-lg bg-white border border-slate-200">
+                <span className="text-[10px] font-bold text-slate-500 block">Interest</span>
+                <span className="text-xs font-extrabold text-slate-800 font-mono mt-0.5 block">
+                  {matchResult.multiFactor.factors.interestMatch.score} / {matchResult.multiFactor.factors.interestMatch.max}
+                </span>
+                <span className="text-[9px] text-emerald-700 font-medium">Aligned</span>
+              </div>
+
+              <div className="p-2.5 rounded-lg bg-white border border-slate-200">
+                <span className="text-[10px] font-bold text-slate-500 block">Job Market</span>
+                <span className="text-xs font-extrabold text-slate-800 font-mono mt-0.5 block">
+                  {matchResult.multiFactor.factors.jobMarketMatch.score} / {matchResult.multiFactor.factors.jobMarketMatch.max}
+                </span>
+                <span className="text-[9px] text-emerald-700 font-medium">High Demand</span>
+              </div>
+            </div>
+
+            {/* Checkmark Explanations */}
+            <div className="pt-2 flex items-center gap-3 text-xs flex-wrap border-t border-slate-200/80">
+              {matchResult.multiFactor.explanations.positive.map((pos, idx) => (
+                <span key={idx} className="inline-flex items-center gap-1 text-emerald-700 font-medium">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  {pos}
+                </span>
+              ))}
+              {matchResult.multiFactor.explanations.advisory.map((adv, idx) => (
+                <span key={idx} className="inline-flex items-center gap-1 text-amber-700 font-medium">
+                  <AlertTriangle className="w-3.5 h-3.5" />
+                  {adv}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* 4 Diagnostic Metrics Strip */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
@@ -327,18 +463,37 @@ function StudentSkillGapContent() {
           <table className="w-full text-left text-xs border-collapse">
             <thead>
               <tr className="bg-[#F8FAFC] border-b border-[#E2E8F0] text-[#475569]">
-                <th className="py-3 px-4 font-semibold">Required Skill</th>
+                <th className="py-3 px-4 font-semibold">Required Competency</th>
                 <th className="py-3 px-4 font-semibold">Current Student Level</th>
-                <th className="py-3 px-4 font-semibold">Required Level</th>
-                <th className="py-3 px-4 font-semibold">Gap Severity</th>
+                <th className="py-3 px-4 font-semibold">Target Requirement</th>
+                <th className="py-3 px-4 font-semibold">Gap & Severity</th>
                 <th className="py-3 px-4 font-semibold">Priority</th>
-                <th className="py-3 px-4 font-semibold text-right">Action</th>
+                <th className="py-3 px-4 font-semibold text-right">Direct Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E2E8F0]">
               {filteredGaps.map((item) => {
                 const isNoGap = item.gap === 'No Gap';
                 const isHighGap = item.gap === 'High Gap';
+
+                // Explicit Current %, Required %, Gap %
+                const currentPct =
+                  item.currentLevel === 'Advanced'
+                    ? 85
+                    : item.currentLevel === 'Intermediate'
+                    ? 60
+                    : item.currentLevel === 'Beginner'
+                    ? 35
+                    : 0;
+
+                const requiredPct =
+                  item.requiredLevel === 'Advanced'
+                    ? 85
+                    : item.requiredLevel === 'Intermediate'
+                    ? 70
+                    : 50;
+
+                const gapPct = Math.max(0, requiredPct - currentPct);
 
                 return (
                   <tr key={item.skill} className="hover:bg-slate-50/70 transition-colors">
@@ -348,39 +503,54 @@ function StudentSkillGapContent() {
                     </td>
 
                     <td className="py-3 px-4">
-                      <span
-                        className={`inline-block px-2.5 py-1 rounded-md text-[11px] font-bold ${
-                          item.currentLevel === 'Advanced'
-                            ? 'bg-emerald-100 text-emerald-800'
-                            : item.currentLevel === 'Intermediate'
-                            ? 'bg-blue-100 text-blue-800'
-                            : item.currentLevel === 'Beginner'
-                            ? 'bg-amber-100 text-amber-800'
-                            : 'bg-rose-100 text-rose-800'
-                        }`}
-                      >
-                        {item.currentLevel === 'None' ? 'Not Present' : item.currentLevel}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono font-bold text-slate-800 text-xs">
+                          {currentPct}%
+                        </span>
+                        <span
+                          className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold ${
+                            item.currentLevel === 'Advanced'
+                              ? 'bg-emerald-100 text-emerald-800'
+                              : item.currentLevel === 'Intermediate'
+                              ? 'bg-blue-100 text-blue-800'
+                              : item.currentLevel === 'Beginner'
+                              ? 'bg-amber-100 text-amber-800'
+                              : 'bg-rose-100 text-rose-800'
+                          }`}
+                        >
+                          {item.currentLevel === 'None' ? 'Not Present' : item.currentLevel}
+                        </span>
+                      </div>
                     </td>
 
                     <td className="py-3 px-4">
-                      <span className="inline-block px-2.5 py-1 rounded-md text-[11px] font-bold bg-slate-100 text-slate-800 border border-slate-200">
-                        {item.requiredLevel}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono font-bold text-slate-800 text-xs">
+                          {requiredPct}%
+                        </span>
+                        <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-800 border border-slate-200">
+                          {item.requiredLevel}
+                        </span>
+                      </div>
                     </td>
 
                     <td className="py-3 px-4">
-                      <span
-                        className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold ${
-                          isNoGap
-                            ? 'bg-emerald-100 text-emerald-800'
-                            : isHighGap
-                            ? 'bg-rose-100 text-rose-800'
-                            : 'bg-amber-100 text-amber-800'
-                        }`}
-                      >
-                        {isNoGap ? '✓ No Gap' : `⚡ ${item.gap}`}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono font-bold text-amber-800 text-xs">
+                          {isNoGap ? '0%' : `${gapPct}%`}
+                        </span>
+                        <span
+                          className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                            isNoGap
+                              ? 'bg-emerald-100 text-emerald-800'
+                              : isHighGap
+                              ? 'bg-rose-100 text-rose-800'
+                              : 'bg-amber-100 text-amber-800'
+                          }`}
+                        >
+                          {isNoGap ? '✓ No Gap' : `⚡ ${item.gap}`}
+                        </span>
+                      </div>
                     </td>
 
                     <td className="py-3 px-4">
@@ -406,10 +576,10 @@ function StudentSkillGapContent() {
                       ) : (
                         <button
                           onClick={() => handleStartLearning(item.recommendedCourse)}
-                          className="px-2.5 py-1 rounded-md bg-[#2857D9] hover:bg-[#1E42B0] text-white text-[11px] font-bold inline-flex items-center gap-1 shadow-2xs"
+                          className="px-3 py-1.5 rounded-lg bg-[#2857D9] hover:bg-[#1E42B0] text-white text-xs font-bold inline-flex items-center gap-1.5 shadow-2xs transition-all"
                         >
-                          <span>Bridge Gap</span>
-                          <ArrowRight className="w-3 h-3" />
+                          <BookOpen className="w-3.5 h-3.5" />
+                          <span>Start Course</span>
                         </button>
                       )}
                     </td>
