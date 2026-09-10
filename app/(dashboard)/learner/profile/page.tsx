@@ -32,15 +32,6 @@ import {
   StudentCertification,
   StudentProject,
 } from '@/lib/sidh-store';
-import {
-  STREAMS_REGISTRY,
-  getAllStreams,
-  getStreamByCode,
-  resolveLearnerCareerContext,
-  findCareerByTitle,
-  StreamDef,
-  CareerProfileDef,
-} from '@/lib/career-registry';
 
 type TabType = 'basic' | 'academics' | 'skills' | 'certifications' | 'projects';
 
@@ -59,7 +50,7 @@ function LearnerProfileContent() {
     proficiencyLevel: SkillProficiencyLevel;
   }>({
     name: '',
-    category: 'Technical Skills',
+    category: 'Programming Languages',
     proficiencyLevel: 'Intermediate',
   });
   const [showSkillForm, setShowSkillForm] = useState(false);
@@ -125,115 +116,6 @@ function LearnerProfileContent() {
     setTimeout(() => setIsSaved(false), 5000);
   };
 
-  const context = learner ? resolveLearnerCareerContext(learner) : null;
-  const currentStream = context ? context.stream : STREAMS_REGISTRY[0];
-  const currentQual = currentStream.qualifications[0];
-  const currentSpec =
-    currentQual.specializations.find(
-      (sp) => sp.name.toLowerCase() === (learner?.specialization || '').toLowerCase()
-    ) || currentQual.specializations[0];
-  const currentCareer =
-    currentSpec.careers.find(
-      (cr) => cr.title.toLowerCase() === (learner?.targetRole || '').toLowerCase()
-    ) || currentSpec.careers[0];
-
-  const handleStreamChange = (streamCode: string) => {
-    if (!learner) return;
-    const stream = getStreamByCode(streamCode) || STREAMS_REGISTRY[0];
-    const qual = stream.qualifications[0];
-    const spec = qual.specializations[0];
-    const career = spec.careers[0];
-
-    const updated: LearnerProfile = {
-      ...learner,
-      branch: stream.name,
-      course: qual.name,
-      qualification: qual.name,
-      specialization: spec.name,
-      targetRole: career.title,
-    };
-    setLearner(updated);
-    saveLearner(updated);
-  };
-
-  const handleSpecializationChange = (specName: string) => {
-    if (!learner) return;
-    const spec = currentQual.specializations.find((sp) => sp.name === specName) || currentQual.specializations[0];
-    const career = spec.careers[0];
-
-    const updated: LearnerProfile = {
-      ...learner,
-      specialization: spec.name,
-      targetRole: career.title,
-    };
-    setLearner(updated);
-    saveLearner(updated);
-  };
-
-  const handleCareerChange = (careerTitle: string) => {
-    if (!learner) return;
-    const updated: LearnerProfile = {
-      ...learner,
-      targetRole: careerTitle,
-    };
-    setLearner(updated);
-    saveLearner(updated);
-  };
-
-  const handleSyncDomainPortfolio = () => {
-    if (!learner || !currentCareer) return;
-
-    const newSkills: StudentSkill[] = currentCareer.requiredSkills.map((req, idx) => ({
-      name: req.skill,
-      category:
-        req.category === 'Core Technical' || req.category === 'Tools & Software'
-          ? 'Technical Skills'
-          : 'Other Skills',
-      proficiencyLevel: idx < 2 ? 'Advanced' : idx < 4 ? 'Intermediate' : 'Beginner',
-      proficiency: idx < 2 ? 88 : idx < 4 ? 72 : 55,
-      verified: idx < 3,
-    }));
-
-    const newProjects: StudentProject[] = currentCareer.projects.map((p) => ({
-      id: p.id,
-      title: p.title,
-      description: p.description,
-      technologiesUsed: p.technologiesUsed,
-      technologies: p.technologiesUsed,
-      skills: p.technologiesUsed,
-      studentRole: p.role,
-      role: p.role,
-      projectOutcome: p.outcome,
-      outcome: p.outcome,
-      skillsDemonstrated: p.technologiesUsed,
-    }));
-
-    const newCerts: StudentCertification[] = currentCareer.certifications.map((c) => ({
-      id: c.id,
-      name: c.title,
-      title: c.title,
-      issuingOrg: c.issuingOrg,
-      issuer: c.issuingOrg,
-      completionDate: 'Jan 2025',
-      date: 'Jan 2025',
-      credentialId: `SKB-${c.id.toUpperCase()}-2026`,
-      verifyId: `SKB-${c.id.toUpperCase()}-2026`,
-      relatedSkills: c.skills,
-      status: 'Verified',
-    }));
-
-    const updated: LearnerProfile = {
-      ...learner,
-      skills: newSkills,
-      projects: newProjects,
-      certifications: newCerts,
-    };
-    setLearner(updated);
-    saveLearner(updated);
-    setIsSaved(true);
-    setTimeout(() => setIsSaved(false), 5000);
-  };
-
   // Add Skill
   const handleAddSkill = (e: React.FormEvent) => {
     e.preventDefault();
@@ -260,7 +142,7 @@ function LearnerProfileContent() {
 
     setLearner(updated);
     saveLearner(updated);
-    setNewSkill({ name: '', category: 'Technical Skills', proficiencyLevel: 'Intermediate' });
+    setNewSkill({ name: '', category: 'Programming Languages', proficiencyLevel: 'Intermediate' });
     setShowSkillForm(false);
     setIsSaved(true);
     setTimeout(() => setIsSaved(false), 4000);
@@ -680,72 +562,26 @@ function LearnerProfileContent() {
                 />
               </div>
 
-              {/* Dynamic Stream & Academic Hierarchy Selectors */}
               <div>
-                <label className="block font-semibold text-[#1E293B] mb-1">
-                  Academic Discipline / Stream *
-                </label>
-                <select
-                  value={currentStream.code}
-                  onChange={(e) => handleStreamChange(e.target.value)}
-                  className="w-full h-9 px-3 border border-[#2857D9] bg-blue-50/20 text-[#0F172A] font-bold rounded-lg focus:border-[#2857D9] outline-none"
-                >
-                  {STREAMS_REGISTRY.map((s) => (
-                    <option key={s.code} value={s.code}>
-                      {s.name} ({s.code})
-                    </option>
-                  ))}
-                </select>
-                <span className="text-[10px] text-[#64748B] mt-0.5 block">
-                  Drives personalized skill gaps, roadmaps, and career matching.
-                </span>
-              </div>
-
-              <div>
-                <label className="block font-semibold text-[#1E293B] mb-1">
-                  Degree / Qualification *
-                </label>
-                <select
+                <label className="block font-semibold text-[#1E293B] mb-1">Course / Degree *</label>
+                <input
+                  type="text"
                   value={learner.course}
-                  onChange={(e) => {
-                    const qual = currentStream.qualifications.find((q) => q.name === e.target.value) || currentQual;
-                    const spec = qual.specializations[0];
-                    const career = spec.careers[0];
-                    const updated = {
-                      ...learner,
-                      course: qual.name,
-                      qualification: qual.name,
-                      specialization: spec.name,
-                      targetRole: career.title,
-                    };
-                    setLearner(updated);
-                    saveLearner(updated);
-                  }}
+                  onChange={(e) => setLearner({ ...learner, course: e.target.value })}
                   className="w-full h-9 px-3 border border-[#CBD5E1] rounded-lg bg-white focus:border-[#2857D9] outline-none"
-                >
-                  {currentStream.qualifications.map((q) => (
-                    <option key={q.id} value={q.name}>
-                      {q.name} ({q.level})
-                    </option>
-                  ))}
-                </select>
+                  placeholder="e.g. B.Tech - Computer Science & Engineering"
+                />
               </div>
 
               <div>
-                <label className="block font-semibold text-[#1E293B] mb-1">
-                  Domain Specialization *
-                </label>
-                <select
-                  value={learner.specialization}
-                  onChange={(e) => handleSpecializationChange(e.target.value)}
-                  className="w-full h-9 px-3 border border-[#CBD5E1] rounded-lg bg-white focus:border-[#2857D9] outline-none font-medium"
-                >
-                  {currentQual.specializations.map((sp) => (
-                    <option key={sp.id} value={sp.name}>
-                      {sp.name}
-                    </option>
-                  ))}
-                </select>
+                <label className="block font-semibold text-[#1E293B] mb-1">Branch / Department *</label>
+                <input
+                  type="text"
+                  value={learner.branch}
+                  onChange={(e) => setLearner({ ...learner, branch: e.target.value })}
+                  className="w-full h-9 px-3 border border-[#CBD5E1] rounded-lg bg-white focus:border-[#2857D9] outline-none"
+                  placeholder="e.g. Computer Science & Engineering"
+                />
               </div>
 
               <div>
@@ -783,35 +619,6 @@ function LearnerProfileContent() {
             </div>
           </div>
 
-          {/* Dynamic Stream Synchronization Banner Card */}
-          <div className="bg-gradient-to-r from-blue-50 via-teal-50/40 to-slate-50 border border-blue-200 rounded-xl p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-[#2857D9]" />
-                <span className="text-xs font-bold uppercase tracking-wider text-blue-950">
-                  Universal Stream Alignment: {currentStream.name} ({currentStream.code})
-                </span>
-              </div>
-              <p className="text-xs text-slate-700">
-                Target Role:{' '}
-                <strong className="text-[#2857D9]">{currentCareer.title}</strong> • Sector:{' '}
-                <span className="font-semibold text-slate-800">{currentCareer.sector}</span> • Work
-                Environment: <span className="font-semibold">{currentCareer.workType}</span>
-              </p>
-              <p className="text-[11px] text-slate-500">
-                Changing your stream or role automatically updates your AI Skill Gaps, Roadmap, and
-                Eligible Jobs across the platform.
-              </p>
-            </div>
-            <button
-              onClick={handleSyncDomainPortfolio}
-              className="px-3.5 py-2 rounded-lg bg-[#2857D9] hover:bg-[#1E42B0] text-white font-bold text-xs flex items-center gap-1.5 shrink-0 transition-all shadow-xs"
-            >
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Sync {currentCareer.title} Portfolio</span>
-            </button>
-          </div>
-
           <div className="bg-white border border-[#CBD5E1] rounded-xl p-6 shadow-xs space-y-5">
             <div className="flex items-center gap-2 pb-3 border-b border-[#E2E8F0]">
               <Briefcase className="w-4 h-4 text-[#2857D9]" />
@@ -821,20 +628,15 @@ function LearnerProfileContent() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
               <div className="sm:col-span-2">
                 <label className="block font-semibold text-[#1E293B] mb-1">Target Career Role *</label>
-                <select
+                <input
+                  type="text"
                   value={learner.targetRole}
-                  onChange={(e) => handleCareerChange(e.target.value)}
-                  className="w-full h-9 px-3 border border-[#2857D9] font-bold text-[#2857D9] rounded-lg bg-white focus:border-[#2857D9] outline-none"
-                >
-                  {currentSpec.careers.map((c) => (
-                    <option key={c.id} value={c.title}>
-                      {c.title} ({c.salaryRange})
-                    </option>
-                  ))}
-                  <option value={learner.targetRole}>Custom: {learner.targetRole}</option>
-                </select>
+                  onChange={(e) => setLearner({ ...learner, targetRole: e.target.value })}
+                  className="w-full h-9 px-3 border border-[#CBD5E1] rounded-lg bg-white font-semibold text-[#2857D9] focus:border-[#2857D9] outline-none"
+                  placeholder="e.g. Junior Python Developer, Full Stack Web Developer"
+                />
                 <span className="text-[11px] text-[#64748B] mt-1 block">
-                  Used by the recommendation engine to calculate live skill gap percentage and eligible jobs.
+                  Used by the recommendation engine to calculate your live skill gap score and recommended courses.
                 </span>
               </div>
 
@@ -1187,7 +989,9 @@ function LearnerProfileContent() {
                       className="w-full h-8 px-3 border border-[#CBD5E1] rounded-lg bg-white"
                     >
                       <option value="Technical Skills">Technical Skills</option>
-                      <option value="Other Skills">Other Skills</option>
+                      <option value="Programming Languages">Programming Languages</option>
+                      <option value="Tools and Technologies">Tools and Technologies</option>
+                      <option value="Soft Skills">Soft Skills</option>
                     </select>
                   </div>
 
@@ -1223,24 +1027,14 @@ function LearnerProfileContent() {
               </form>
             )}
 
-            {/* Categorized Skills Grid - Technical Skills and Other Skills Only */}
+            {/* Categorized Skills Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {(
-                ['Technical Skills', 'Other Skills'] as SkillCategory[]
+                ['Programming Languages', 'Technical Skills', 'Tools and Technologies', 'Soft Skills'] as SkillCategory[]
               ).map((category) => {
-                const categorySkills = learner.skills.filter((s) => {
-                  if (category === 'Other Skills') {
-                    return (
-                      s.category.toLowerCase() === 'other skills' ||
-                      s.category.toLowerCase() === 'soft skills' ||
-                      s.name.toLowerCase().includes('problem solving')
-                    );
-                  }
-                  return (
-                    s.category.toLowerCase() === 'technical skills' ||
-                    (!s.category.toLowerCase().includes('other') && !s.category.toLowerCase().includes('soft') && !s.name.toLowerCase().includes('problem solving'))
-                  );
-                });
+                const categorySkills = learner.skills.filter(
+                  (s) => s.category.toLowerCase() === category.toLowerCase()
+                );
                 return (
                   <div key={category} className="border border-[#E2E8F0] rounded-xl p-4 bg-[#F8FAFC] space-y-3">
                     <div className="flex items-center justify-between pb-2 border-b border-[#E2E8F0]">

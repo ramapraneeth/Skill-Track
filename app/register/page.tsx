@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import {
   GraduationCap,
+  ArrowRight,
   Building2,
   ShieldCheck,
   ArrowRight,
@@ -11,7 +12,7 @@ import {
   Lock,
 } from 'lucide-react';
 
-export default function RegisterPage() {
+export default function RegisterRoleSelectionPage() {
   return (
     <div className="min-h-screen flex flex-col bg-[#F7FAFE] text-[#0B2F55]">
       {/* National Tricolor Micro-strip */}
@@ -125,9 +126,8 @@ export default function RegisterPage() {
             >
               <span>Register as Student</span>
               <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
-        </div>
+            </div>
+          </Link>
 
         {/* Authorized Access Informational Section */}
         <div className="bg-white border border-[#CFE3FA] rounded-xl p-5 sm:p-6 space-y-4 shadow-[0_4px_20px_rgba(20,70,120,0.04)]">
@@ -179,6 +179,37 @@ export default function RegisterPage() {
                     Already registered? Sign in using your authorized government credentials.
                   </div>
                 </div>
+                <Link
+                  href="/login"
+                  className="px-3 py-1.5 rounded-md bg-[#0B1E36] hover:bg-[#1E3A5F] text-white font-semibold text-[11px] transition-colors flex items-center gap-1"
+                >
+                  <span>Sign In</span>
+                  <ArrowRight className="w-3 h-3" />
+                </Link>
+              </div>
+
+              {/* Government Row */}
+              <div className="p-3.5 rounded-lg bg-slate-50 border border-slate-200/70 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-700 flex items-center justify-center shrink-0">
+                    <ShieldCheck className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-slate-900">
+                      Government Authority
+                    </div>
+                    <div className="text-[10px] text-slate-500">
+                      Ministry & State Skill Missions
+                    </div>
+                  </div>
+                </div>
+                <Link
+                  href="/login"
+                  className="px-3 py-1.5 rounded-md bg-[#0B1E36] hover:bg-[#1E3A5F] text-white font-semibold text-[11px] transition-colors flex items-center gap-1"
+                >
+                  <span>Sign In</span>
+                  <ArrowRight className="w-3 h-3" />
+                </Link>
               </div>
               <Link
                 href="/login"
