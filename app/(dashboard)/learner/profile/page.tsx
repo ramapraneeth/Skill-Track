@@ -50,7 +50,7 @@ function LearnerProfileContent() {
     proficiencyLevel: SkillProficiencyLevel;
   }>({
     name: '',
-    category: 'Programming Languages',
+    category: 'Technical Skills',
     proficiencyLevel: 'Intermediate',
   });
   const [showSkillForm, setShowSkillForm] = useState(false);
@@ -142,7 +142,7 @@ function LearnerProfileContent() {
 
     setLearner(updated);
     saveLearner(updated);
-    setNewSkill({ name: '', category: 'Programming Languages', proficiencyLevel: 'Intermediate' });
+    setNewSkill({ name: '', category: 'Technical Skills', proficiencyLevel: 'Intermediate' });
     setShowSkillForm(false);
     setIsSaved(true);
     setTimeout(() => setIsSaved(false), 4000);
@@ -989,9 +989,7 @@ function LearnerProfileContent() {
                       className="w-full h-8 px-3 border border-[#CBD5E1] rounded-lg bg-white"
                     >
                       <option value="Technical Skills">Technical Skills</option>
-                      <option value="Programming Languages">Programming Languages</option>
-                      <option value="Tools and Technologies">Tools and Technologies</option>
-                      <option value="Soft Skills">Soft Skills</option>
+                      <option value="Other Skills">Other Skills</option>
                     </select>
                   </div>
 
@@ -1027,14 +1025,24 @@ function LearnerProfileContent() {
               </form>
             )}
 
-            {/* Categorized Skills Grid */}
+            {/* Categorized Skills Grid - Technical Skills and Other Skills Only */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {(
-                ['Programming Languages', 'Technical Skills', 'Tools and Technologies', 'Soft Skills'] as SkillCategory[]
+                ['Technical Skills', 'Other Skills'] as SkillCategory[]
               ).map((category) => {
-                const categorySkills = learner.skills.filter(
-                  (s) => s.category.toLowerCase() === category.toLowerCase()
-                );
+                const categorySkills = learner.skills.filter((s) => {
+                  if (category === 'Other Skills') {
+                    return (
+                      s.category.toLowerCase() === 'other skills' ||
+                      s.category.toLowerCase() === 'soft skills' ||
+                      s.name.toLowerCase().includes('problem solving')
+                    );
+                  }
+                  return (
+                    s.category.toLowerCase() === 'technical skills' ||
+                    (!s.category.toLowerCase().includes('other') && !s.category.toLowerCase().includes('soft') && !s.name.toLowerCase().includes('problem solving'))
+                  );
+                });
                 return (
                   <div key={category} className="border border-[#E2E8F0] rounded-xl p-4 bg-[#F8FAFC] space-y-3">
                     <div className="flex items-center justify-between pb-2 border-b border-[#E2E8F0]">

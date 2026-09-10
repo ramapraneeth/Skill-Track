@@ -2,7 +2,7 @@
 // Supports Learner, Trainer, and Government Portals with LocalStorage persistence and realistic data.
 
 export type SkillProficiencyLevel = 'Beginner' | 'Intermediate' | 'Advanced';
-export type SkillCategory = 'Technical Skills' | 'Programming Languages' | 'Tools and Technologies' | 'Soft Skills';
+export type SkillCategory = 'Technical Skills' | 'Other Skills' | 'Programming Languages' | 'Tools and Technologies' | 'Soft Skills';
 
 export interface StudentSkill {
   name: string;
@@ -304,14 +304,11 @@ export const INITIAL_LEARNER: LearnerProfile = {
   },
 
   skills: [
-    { name: 'Python', category: 'Programming Languages', proficiencyLevel: 'Intermediate', proficiency: 75, verified: true },
     { name: 'SQL', category: 'Technical Skills', proficiencyLevel: 'Intermediate', proficiency: 70, verified: true },
-    { name: 'Problem Solving', category: 'Soft Skills', proficiencyLevel: 'Intermediate', proficiency: 80, verified: true },
-    { name: 'Git', category: 'Tools and Technologies', proficiencyLevel: 'Beginner', proficiency: 45, verified: false },
     { name: 'REST APIs', category: 'Technical Skills', proficiencyLevel: 'Beginner', proficiency: 40, verified: false },
     { name: 'HTML5 & CSS3', category: 'Technical Skills', proficiencyLevel: 'Advanced', proficiency: 92, verified: true },
-    { name: 'JavaScript ES6', category: 'Programming Languages', proficiencyLevel: 'Intermediate', proficiency: 75, verified: true },
     { name: 'React.js', category: 'Technical Skills', proficiencyLevel: 'Intermediate', proficiency: 70, verified: true },
+    { name: 'Problem Solving', category: 'Other Skills', proficiencyLevel: 'Intermediate', proficiency: 80, verified: true },
   ],
 
   certifications: [
@@ -1626,12 +1623,23 @@ export function getLearner(): LearnerProfile {
       },
       skills:
         parsed.skills && parsed.skills.length > 0
-          ? parsed.skills.map((s: any) => ({
-              ...s,
-              proficiencyLevel:
-                s.proficiencyLevel ||
-                (s.proficiency >= 80 ? 'Advanced' : s.proficiency >= 60 ? 'Intermediate' : 'Beginner'),
-            }))
+          ? parsed.skills.map((s: any) => {
+              let category: SkillCategory = 'Technical Skills';
+              if (
+                s.category === 'Other Skills' ||
+                s.category === 'Soft Skills' ||
+                s.name?.toLowerCase().includes('problem solving')
+              ) {
+                category = 'Other Skills';
+              }
+              return {
+                ...s,
+                category,
+                proficiencyLevel:
+                  s.proficiencyLevel ||
+                  (s.proficiency >= 80 ? 'Advanced' : s.proficiency >= 60 ? 'Intermediate' : 'Beginner'),
+              };
+            })
           : INITIAL_LEARNER.skills,
       certifications:
         parsed.certifications && parsed.certifications.length > 0

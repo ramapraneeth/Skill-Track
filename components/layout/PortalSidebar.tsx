@@ -113,7 +113,7 @@ export const PortalSidebar: React.FC<PortalSidebarProps> = ({ currentRole, role,
       label: 'Learning',
       icon: BookOpen,
       items: [
-        { label: 'Skills & Taxonomy', href: '/learner/skills', icon: Target },
+        { label: 'Skills & Proficiency', href: '/learner/skills', icon: Target },
         { label: 'AI Skill Gap', href: '/learner/skill-gap', icon: Zap, badge: 'AI' },
         { label: 'Learning Roadmap', href: '/learner/roadmap', icon: Route },
         { label: 'Courses & Outcomes', href: '/learner/courses', icon: GraduationCap },
