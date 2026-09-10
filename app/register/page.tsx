@@ -7,7 +7,6 @@ import {
   ArrowRight,
   Building2,
   ShieldCheck,
-  ArrowRight,
   CheckCircle2,
   Lock,
 } from 'lucide-react';
@@ -126,8 +125,9 @@ export default function RegisterRoleSelectionPage() {
             >
               <span>Register as Student</span>
               <ArrowRight className="w-4 h-4" />
-            </div>
-          </Link>
+            </Link>
+          </div>
+        </div>
 
         {/* Authorized Access Informational Section */}
         <div className="bg-white border border-[#CFE3FA] rounded-xl p-5 sm:p-6 space-y-4 shadow-[0_4px_20px_rgba(20,70,120,0.04)]">
