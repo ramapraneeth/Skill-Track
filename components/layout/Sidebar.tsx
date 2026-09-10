@@ -43,44 +43,29 @@ export const Sidebar: React.FC<SidebarProps> = ({ role = 'student', onLogout }) 
   }, [pathname]);
 
   const handleRoleQuickSwitch = (targetRole: UserRole) => {
-    let targetUser: any = null;
     let targetPath = '/';
-
-    if (targetRole === 'student') {
-      targetUser = {
-        id: 'usr-std-101',
-        studentId: 'std-101',
-        fullName: 'Rahul Sharma',
-        email: 'rahul.sharma@skillbridge.gov.in',
-        role: 'student',
-        organization: 'Andhra University',
-      };
+    if (targetRole === 'student' || targetRole === 'learner') {
       targetPath = '/student/dashboard';
-    } else if (targetRole === 'trainer') {
-      targetUser = {
-        id: 'usr-trn-201',
-        trainerId: 'trn-201',
-        fullName: 'Prof. Rajesh Nair',
-        email: 'rajesh.nair@skillbridge.gov.in',
-        role: 'trainer',
-        organization: 'Apex National Skilling Academy',
-      };
+    } else if (targetRole === 'trainer' || targetRole === 'provider') {
       targetPath = '/trainer/dashboard';
     } else {
-      targetUser = {
-        id: 'usr-gov-001',
-        fullName: 'Dr. Rajiv Kumar',
-        email: 'director.msde@skillbridge.gov.in',
-        role: 'government',
-        organization: 'MSDE Government of India',
-      };
       targetPath = '/government/dashboard';
     }
 
-    localStorage.setItem('skilltrack_user', JSON.stringify(targetUser));
-    localStorage.setItem('skilltrack_role', targetRole);
-    router.push(targetPath);
-    router.refresh();
+    const saved = localStorage.getItem('skilltrack_user');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        parsed.role = targetRole;
+        localStorage.setItem('skilltrack_user', JSON.stringify(parsed));
+        localStorage.setItem('skilltrack_role', targetRole);
+        router.push(targetPath);
+        router.refresh();
+        return;
+      } catch {}
+    }
+
+    router.push(`/login?role=${targetRole}`);
   };
 
   // Build role-tailored navigation groups

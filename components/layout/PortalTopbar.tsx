@@ -17,7 +17,7 @@ export const PortalTopbar: React.FC<PortalTopbarProps> = ({ user, onLogout }) =>
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [localUser, setLocalUser] = useState<{ name: string; role: string }>({
-    name: 'Rahul Sharma',
+    name: 'User',
     role: 'LEARNER',
   });
 
@@ -66,7 +66,7 @@ export const PortalTopbar: React.FC<PortalTopbarProps> = ({ user, onLogout }) =>
       if (rawUser) {
         const parsed = JSON.parse(rawUser);
         setLocalUser({
-          name: parsed.fullName || parsed.name || 'Rahul Sharma',
+          name: parsed.fullName || parsed.name || 'User',
           role: (parsed.role || 'LEARNER').toUpperCase(),
         });
       }

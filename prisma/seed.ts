@@ -5,72 +5,51 @@ import crypto from 'crypto';
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('Seeding demonstration accounts and outcome intelligence records into Neon PostgreSQL...');
+  console.log('Seeding official accounts into Neon PostgreSQL...');
 
-  // Configurable credentials via environment variables
-  const adminEmail = process.env.DEMO_ADMIN_EMAIL || 'admin.msde@gov.in';
-  const adminPassword = process.env.DEMO_ADMIN_PASSWORD || 'demo1234';
+  const govEmail = process.env.ADMIN_EMAIL || 'admin@skilltrack.gov.in';
+  const govPassword = process.env.ADMIN_PASSWORD || 'SkillTrack@Admin2025';
 
-  const providerEmail = process.env.DEMO_PROVIDER_EMAIL || 'director@apexskills.org';
-  const providerPassword = process.env.DEMO_PROVIDER_PASSWORD || 'demo1234';
+  const providerEmail = process.env.PROVIDER_EMAIL || 'provider@skilltrack.org.in';
+  const providerPassword = process.env.PROVIDER_PASSWORD || 'SkillTrack@Provider2025';
 
-  const learnerEmail = process.env.DEMO_LEARNER_EMAIL || 'rahul.sharma@skilltrack.in';
-  const learnerPassword = process.env.DEMO_LEARNER_PASSWORD || 'demo1234';
+  const learnerEmail = process.env.LEARNER_EMAIL || 'candidate@skilltrack.in';
+  const learnerPassword = process.env.LEARNER_PASSWORD || 'SkillTrack@Learner2025';
 
-  const [adminHash, providerHash, learnerHash] = await Promise.all([
-    bcrypt.hash(adminPassword, 10),
+  const [govHash, providerHash, learnerHash] = await Promise.all([
+    bcrypt.hash(govPassword, 10),
     bcrypt.hash(providerPassword, 10),
     bcrypt.hash(learnerPassword, 10),
   ]);
 
-  // 1. Seed Government / Administrator User Account
-  const userGov = await prisma.users.upsert({
-    where: { email: adminEmail },
+  // 1. Government Administrator
+  await prisma.users.upsert({
+    where: { email: govEmail },
     update: {
-      hashed_password: adminHash,
+      hashed_password: govHash,
       role: 'government',
-      full_name: 'Rajesh Verma (Joint Secretary)',
+      full_name: 'Administrator (SkillTrack PMU)',
       is_active: true,
     },
     create: {
       id: crypto.randomUUID(),
-      email: adminEmail,
-      hashed_password: adminHash,
+      email: govEmail,
+      hashed_password: govHash,
       role: 'government',
-      full_name: 'Rajesh Verma (Joint Secretary)',
-      phone: '+91 98111 22334',
+      full_name: 'Administrator (SkillTrack PMU)',
+      phone: '+91 11 2345 6789',
       is_active: true,
       avatar_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
     },
   });
 
-  // Also support alias mission.director@msde.gov.in
-  await prisma.users.upsert({
-    where: { email: 'mission.director@msde.gov.in' },
-    update: {
-      hashed_password: adminHash,
-      role: 'government',
-      full_name: 'Dr. Rajiv Kumar (Mission Director)',
-      is_active: true,
-    },
-    create: {
-      id: crypto.randomUUID(),
-      email: 'mission.director@msde.gov.in',
-      hashed_password: adminHash,
-      role: 'government',
-      full_name: 'Dr. Rajiv Kumar (Mission Director)',
-      phone: '+91 98111 22335',
-      is_active: true,
-    },
-  });
-
-  // 2. Seed Training Provider User Account
+  // 2. Training Provider
   const userProvider = await prisma.users.upsert({
     where: { email: providerEmail },
     update: {
       hashed_password: providerHash,
       role: 'provider',
-      full_name: 'Dr. Sunita Rao (Director)',
+      full_name: 'National Skill Training Institute',
       is_active: true,
     },
     create: {
@@ -78,20 +57,43 @@ async function main() {
       email: providerEmail,
       hashed_password: providerHash,
       role: 'provider',
-      full_name: 'Dr. Sunita Rao (Director)',
-      phone: '+91 91234 56789',
+      full_name: 'National Skill Training Institute',
+      phone: '+91 80 2345 6789',
       is_active: true,
       avatar_url: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80',
     },
   });
 
-  // 3. Seed Learner User Account
+  const providerEntity = await prisma.training_providers.upsert({
+    where: { code: 'NSTI-DEL-01' },
+    update: {
+      user_id: userProvider.id,
+      name: 'National Skill Training Institute',
+      contact_email: providerEmail,
+    },
+    create: {
+      id: 'prov-nsti-001',
+      user_id: userProvider.id,
+      name: 'National Skill Training Institute',
+      code: 'NSTI-DEL-01',
+      state: 'Delhi',
+      district: 'New Delhi',
+      accreditation_tier: 'Tier 1 Master Hub',
+      contact_email: providerEmail,
+      phone: '+91 80 2345 6789',
+      active_learners_count: 1,
+      overall_placement_rate: 82.5,
+      overall_retention_rate: 79.0,
+    },
+  });
+
+  // 3. Learner Candidate
   const userLearner = await prisma.users.upsert({
     where: { email: learnerEmail },
     update: {
       hashed_password: learnerHash,
       role: 'learner',
-      full_name: 'Rahul Sharma',
+      full_name: 'Aditya Sharma',
       is_active: true,
     },
     create: {
@@ -99,31 +101,43 @@ async function main() {
       email: learnerEmail,
       hashed_password: learnerHash,
       role: 'learner',
-      full_name: 'Rahul Sharma',
+      full_name: 'Aditya Sharma',
       phone: '+91 98765 43210',
       is_active: true,
       avatar_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
     },
   });
 
-  console.log('Demonstration user accounts successfully provisioned:');
-  console.log(`- Government Administrator: ${adminEmail} (or mission.director@msde.gov.in)`);
-  console.log(`- Training Provider: ${providerEmail}`);
-  console.log(`- Learner Candidate: ${learnerEmail}`);
-
-  // 4. Verify Training Provider entity link
-  await prisma.training_providers.updateMany({
-    where: { id: 'provider-1' },
-    data: { user_id: userProvider.id },
+  await prisma.learners.upsert({
+    where: { learner_code: 'ST-2025-001' },
+    update: {
+      user_id: userLearner.id,
+      provider_id: providerEntity.id,
+      full_name: 'Aditya Sharma',
+    },
+    create: {
+      id: 'lrn-aditya-001',
+      user_id: userLearner.id,
+      provider_id: providerEntity.id,
+      learner_code: 'ST-2025-001',
+      full_name: 'Aditya Sharma',
+      gender: 'Male',
+      age: 22,
+      state: 'Delhi',
+      district: 'New Delhi',
+      education_level: 'B.Tech Computer Science',
+      socio_economic_category: 'General',
+      current_status: 'ENROLLED',
+      profile_completion_pct: 85,
+      risk_level: 'Low',
+      skill_match_pct: 82,
+    },
   });
 
-  // 5. Verify Learner candidate entity link
-  await prisma.learners.updateMany({
-    where: { id: 'learner-1' },
-    data: { user_id: userLearner.id },
-  });
-
-  console.log('Seed verification complete.');
+  console.log('Official accounts provisioned:');
+  console.log(`- Government: ${govEmail}`);
+  console.log(`- Provider:   ${providerEmail}`);
+  console.log(`- Learner:    ${learnerEmail}`);
 }
 
 main()

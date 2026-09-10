@@ -17,8 +17,8 @@ import {
 
 export default function LoginPage() {
   const router = useRouter();
-  const [identifier, setIdentifier] = useState('rahul.sharma@skillbridge.gov.in');
-  const [password, setPassword] = useState('demo1234');
+  const [identifier, setIdentifier] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [selectedRole, setSelectedRole] = useState<'learner' | 'trainer' | 'government'>('learner');
@@ -29,12 +29,12 @@ export default function LoginPage() {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
       const roleParam = params.get('role');
-      if (roleParam === 'trainer') {
-        handleQuickFill('trainer');
+      if (roleParam === 'trainer' || roleParam === 'provider') {
+        setSelectedRole('trainer');
       } else if (roleParam === 'government') {
-        handleQuickFill('government');
+        setSelectedRole('government');
       } else if (roleParam === 'learner') {
-        handleQuickFill('learner');
+        setSelectedRole('learner');
       }
     }
   }, []);
@@ -42,63 +42,46 @@ export default function LoginPage() {
   const handleQuickFill = (role: 'learner' | 'trainer' | 'government') => {
     setSelectedRole(role);
     setErrorMessage(null);
-    if (role === 'learner') {
-      setIdentifier('rahul.sharma@skillbridge.gov.in');
-      setPassword('demo1234');
-    } else if (role === 'trainer') {
-      setIdentifier('rajesh.nair@skillbridge.gov.in');
-      setPassword('demo1234');
-    } else {
-      setIdentifier('director.msde@skillbridge.gov.in');
-      setPassword('demo1234');
-    }
   };
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setErrorMessage(null);
 
-    setTimeout(() => {
-      let userObj: any = null;
-      let targetRoute = '/learner/dashboard';
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: identifier,
+          password,
+          role: selectedRole === 'trainer' ? 'provider' : selectedRole,
+        }),
+      });
 
-      if (selectedRole === 'learner') {
-        userObj = {
-          id: 'lrn-101',
-          fullName: 'Rahul Sharma',
-          email: identifier,
-          role: 'learner',
-          organization: 'Andhra University',
-        };
-        targetRoute = '/learner/dashboard';
-      } else if (selectedRole === 'trainer') {
-        userObj = {
-          id: 'trn-201',
-          fullName: 'Prof. Rajesh Nair',
-          email: identifier,
-          role: 'trainer',
-          organization: 'Apex National Skilling Centre',
-        };
-        targetRoute = '/trainer/dashboard';
-      } else {
-        userObj = {
-          id: 'gov-001',
-          fullName: 'Dr. Rajiv Kumar',
-          email: identifier,
-          role: 'government',
-          organization: 'Ministry of Skill Development & Entrepreneurship',
-        };
-        targetRoute = '/government/dashboard';
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        throw new Error(json.error?.message || 'Authentication failed. Please verify your credentials.');
       }
 
-      localStorage.setItem('skilltrack_user', JSON.stringify(userObj));
+      localStorage.setItem('skilltrack_user', JSON.stringify(json.data.user));
       localStorage.setItem('skilltrack_role', selectedRole);
-      localStorage.setItem('skilltrack_token', 'demo_jwt_token_' + Date.now());
+      localStorage.setItem('skilltrack_token', json.data.token);
 
-      setIsLoading(false);
+      const targetRoute =
+        selectedRole === 'learner'
+          ? '/learner/dashboard'
+          : selectedRole === 'trainer'
+          ? '/trainer/dashboard'
+          : '/government/dashboard';
+
       router.push(targetRoute);
-    }, 450);
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Authentication failed');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

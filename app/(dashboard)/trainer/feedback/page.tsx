@@ -12,11 +12,7 @@ export default function TrainerFeedbackPage() {
     { metric: 'Punctuality & AEBAS Session Compliance', score: 4.9, max: 5.0, percent: 98 },
   ];
 
-  const candidateReviews = [
-    { candidate: 'Arjun Patel', comment: 'The hands-on Next.js practical sessions made database and API architecture very easy to grasp.', rating: 5, date: '04 Sep 2026' },
-    { candidate: 'Priya Verma', comment: 'Dr. Rajesh explains complex reactive state management very patiently. Lab exercises are top notch.', rating: 5, date: '28 Aug 2026' },
-    { candidate: 'Rahul Sharma', comment: 'Good pace of instruction. Would appreciate more sample questions for the NSQF Level 5 final exam.', rating: 4, date: '20 Aug 2026' },
-  ];
+  const candidateReviews: { candidate: string; comment: string; rating: number; date: string }[] = [];
 
   return (
     <div className="space-y-6">
@@ -73,18 +69,24 @@ export default function TrainerFeedbackPage() {
       <div className="bg-white rounded-lg border border-slate-200 p-5 shadow-sm space-y-4">
         <h3 className="font-semibold text-sm text-slate-800">Recent Candidate Feedback Submissions</h3>
         <div className="space-y-3">
-          {candidateReviews.map((rev, idx) => (
-            <div key={idx} className="p-4 rounded-lg bg-slate-50 border border-slate-100 text-xs space-y-1.5">
-              <div className="flex justify-between items-center">
-                <div className="flex items-center gap-2">
-                  <span className="font-bold text-slate-900">{rev.candidate}</span>
-                  <span className="text-amber-500 font-bold">{'★'.repeat(rev.rating)}</span>
-                </div>
-                <span className="text-[11px] text-slate-400">{rev.date}</span>
-              </div>
-              <p className="text-slate-600 leading-relaxed italic">"{rev.comment}"</p>
+          {candidateReviews.length === 0 ? (
+            <div className="py-8 text-center text-slate-400 text-xs">
+              No candidate feedback submissions recorded yet.
             </div>
-          ))}
+          ) : (
+            candidateReviews.map((rev, idx) => (
+              <div key={idx} className="p-4 rounded-lg bg-slate-50 border border-slate-100 text-xs space-y-1.5">
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-slate-900">{rev.candidate}</span>
+                    <span className="text-amber-500 font-bold">{'★'.repeat(rev.rating)}</span>
+                  </div>
+                  <span className="text-[11px] text-slate-400">{rev.date}</span>
+                </div>
+                <p className="text-slate-600 leading-relaxed italic">"{rev.comment}"</p>
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>
