@@ -26,9 +26,6 @@ import {
   Menu,
   X,
   Database,
-  Check,
-  Activity,
-  Network,
 } from 'lucide-react';
 
 export default function HomePage() {
@@ -608,71 +605,6 @@ export default function HomePage() {
                   />
                 </svg>
 
-                {/* ----------------------------------------------------
-                    3 INTEGRATED SYSTEM INFORMATION CARDS (FLOATING DATA TILES)
-                    Strictly replaces any human photo cards!
-                    ---------------------------------------------------- */}
-
-                {/* CARD 1: Cryptographically Verified Credential (Top-Left / Mid-Top) */}
-                <div className="absolute top-8 left-2 sm:left-4 bg-white border border-[#E1EBF5] rounded-xl p-3 sm:p-3.5 shadow-[0_8px_30px_rgba(20,70,120,0.08)] flex items-center gap-3 animate-fade-in z-20 backdrop-blur-xs">
-                  <div className="w-9 h-9 rounded-lg bg-[#EAF4FF] text-[#1769E0] flex items-center justify-center shrink-0 border border-[#CFE3FA]">
-                    <Award className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#45627F]">
-                        Verified Credential
-                      </span>
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#16A36A]" />
-                    </div>
-                    <div className="text-xs font-extrabold text-[#0B2F55]">
-                      NSQF Level 6
-                    </div>
-                    <div className="text-[11px] text-[#16A36A] font-semibold flex items-center gap-1 mt-0.5">
-                      <Check className="w-3 h-3 stroke-[3]" />
-                      <span>Cryptographically Verified</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* CARD 2: National Telemetry Live Status (Center / Right) */}
-                <div className="absolute top-44 right-2 sm:right-6 bg-white border border-[#E1EBF5] rounded-xl p-3 sm:p-3.5 shadow-[0_8px_30px_rgba(20,70,120,0.08)] flex items-center gap-3 z-20 backdrop-blur-xs">
-                  <div className="w-9 h-9 rounded-lg bg-[#F2F8FF] text-[#1769E0] flex items-center justify-center shrink-0 border border-[#CFE3FA]">
-                    <Activity className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-[#16A36A] animate-ping" />
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#16A36A]">
-                        Live Telemetry
-                      </span>
-                    </div>
-                    <div className="text-sm font-extrabold text-[#0B2F55]">
-                      1,480,240+
-                    </div>
-                    <div className="text-[10px] text-[#45627F]">
-                      Active Trajectories Connected
-                    </div>
-                  </div>
-                </div>
-
-                {/* CARD 3: Longitudinal Wage & Retention (Lower-Left / Above Waves) */}
-                <div className="absolute bottom-12 left-4 sm:left-8 bg-white border border-[#E1EBF5] rounded-xl p-3 sm:p-3.5 shadow-[0_8px_30px_rgba(20,70,120,0.08)] flex items-center gap-3 z-20 backdrop-blur-xs">
-                  <div className="w-9 h-9 rounded-lg bg-[#EAF4FF] text-[#1769E0] flex items-center justify-center shrink-0 border border-[#CFE3FA]">
-                    <TrendingUp className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <div className="text-[10px] font-bold uppercase tracking-wider text-[#45627F]">
-                      180-Day Retention
-                    </div>
-                    <div className="text-sm font-extrabold text-[#0B2F55]">
-                      91.2%
-                    </div>
-                    <div className="text-[10px] text-[#45627F]">
-                      Monitored Formal Wage Progression
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
