@@ -371,12 +371,10 @@ export default function HomePage() {
         </div>
       </aside>
 
-      {/* Main Website Page Content Container - Moves aside to the right and gets blurred when dash bar is open */}
+      {/* Main Website Page Content Container - Moves aside to the right when dash bar is open, completely normal and crisp (NO blur) */}
       <div
-        className={`min-h-screen flex flex-col transition-all duration-300 ease-in-out ${
-          dashBarOpen
-            ? 'translate-x-72 sm:translate-x-80 blur-[2px] opacity-85 cursor-pointer'
-            : 'translate-x-0 blur-none opacity-100'
+        className={`min-h-screen flex flex-col transition-transform duration-300 ease-in-out ${
+          dashBarOpen ? 'translate-x-72 sm:translate-x-80' : 'translate-x-0'
         }`}
         onClick={() => {
           if (dashBarOpen) setDashBarOpen(false);
@@ -389,10 +387,10 @@ export default function HomePage() {
           <div className="flex-1 bg-[#16A36A]" />
         </div>
 
-        {/* Official Government Header (Emblem & Govt of India block removed from header per instruction) */}
+        {/* Official Government Header */}
         <header className="sticky top-0 z-40 w-full bg-[#FFFFFF] border-b border-[#E5EDF6] shadow-2xs">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-[80px] flex items-center justify-between">
-            {/* Left: The Three Lines Option + Skill Track Brand Identity */}
+          <div className="w-full px-3 sm:px-5 lg:px-6 h-[80px] flex items-center justify-between">
+            {/* Left: The Three Lines Option (totally at the left corner) + Skill Track Brand Identity */}
             <div className="flex items-center gap-3 sm:gap-4">
               {/* The Three Lines Option on the left side at the top corner */}
               <button

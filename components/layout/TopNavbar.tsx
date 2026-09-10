@@ -227,7 +227,7 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({ forcedRole }) => {
     <>
       <header className="sticky top-0 z-50 w-full bg-white border-b border-[#E5EDF6] text-[#0B2F55] shadow-2xs">
       {/* Top Brand & Horizontal Navigation Container */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="w-full px-3 sm:px-5 lg:px-6">
         <div className="flex items-center justify-between h-[76px]">
           {/* Left: Three Lines Option + Brand Identity */}
           <div className="flex items-center gap-2.5 sm:gap-3">
