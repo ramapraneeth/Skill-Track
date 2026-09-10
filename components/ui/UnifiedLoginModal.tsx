@@ -23,16 +23,8 @@ export const UnifiedLoginModal: React.FC<UnifiedLoginModalProps> = ({ isOpen, on
   const handleRoleSelect = (role: UserRole) => {
     setSelectedRole(role);
     setErrorMessage(null);
-    if (role === 'learner') {
-      setEmail('rahul.sharma@skilltrack.in');
-      setPassword('demo1234');
-    } else if (role === 'provider') {
-      setEmail('director@apexskills.org');
-      setPassword('demo1234');
-    } else if (role === 'government') {
-      setEmail('mission.director@msde.gov.in');
-      setPassword('demo1234');
-    }
+    setEmail('');
+    setPassword('');
   };
 
   const handleLogin = async (e: React.FormEvent) => {

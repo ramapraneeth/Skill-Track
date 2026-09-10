@@ -25,12 +25,12 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
     }
 
     // Contextual fallback based on path
-    if (pathname.includes('/student/')) {
-      setUser({ fullName: 'Rahul Sharma', role: 'student' });
+    if (pathname.includes('/student/') || pathname.includes('/learner/')) {
+      setUser({ fullName: 'Learner', role: 'student' });
     } else if (pathname.includes('/trainer/')) {
-      setUser({ fullName: 'Prof. Rajesh Nair', role: 'trainer' });
+      setUser({ fullName: 'Trainer', role: 'trainer' });
     } else {
-      setUser({ fullName: 'Dr. Rajiv Kumar', role: 'government' });
+      setUser({ fullName: 'Administrator', role: 'government' });
     }
   }, [pathname]);
 

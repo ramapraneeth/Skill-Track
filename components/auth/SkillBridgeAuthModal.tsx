@@ -22,8 +22,6 @@ import {
 } from 'lucide-react';
 import { UserRole } from '@/types/auth';
 import {
-  INITIAL_STUDENTS,
-  INITIAL_TRAINERS,
   StudentRecord,
   TrainerRecord,
   getStoredStudents,
@@ -50,8 +48,8 @@ export const SkillBridgeAuthModal: React.FC<SkillBridgeAuthModalProps> = ({
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // Login credentials
-  const [loginIdentifier, setLoginIdentifier] = useState('rahul.sharma@skillbridge.gov.in');
-  const [loginPassword, setLoginPassword] = useState('skillbridge2025');
+  const [loginIdentifier, setLoginIdentifier] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
 
   // Student Registration fields
   const [studentForm, setStudentForm] = useState({
@@ -67,11 +65,11 @@ export const SkillBridgeAuthModal: React.FC<SkillBridgeAuthModalProps> = ({
     degree: 'B.Tech',
     branch: 'Computer Science',
     graduationYear: 2026,
-    currentSkills: 'Python, C++, HTML, SQL',
-    certifications: 'NPTEL Java Specialist',
-    projects: 'AI Chatbot, E-commerce Portal',
-    internshipExperience: '2 Months Web Development Intern',
-    careerGoal: 'Full Stack Software Engineer',
+    currentSkills: '',
+    certifications: '',
+    projects: '',
+    internshipExperience: '',
+    careerGoal: '',
     password: '',
   });
 
@@ -80,13 +78,13 @@ export const SkillBridgeAuthModal: React.FC<SkillBridgeAuthModalProps> = ({
     trainerName: '',
     trainerId: '',
     organization: '',
-    qualification: 'M.Tech / PhD Scholar',
-    specialization: 'Cloud & Full Stack Systems',
-    experienceYears: 8,
-    skills: 'Java, Spring Boot, React, Docker',
-    certifications: 'AWS Solutions Architect, CKA',
-    trainingPrograms: 'National Skilling Mission Batch 2025',
-    location: 'Hyderabad, Telangana',
+    qualification: '',
+    specialization: '',
+    experienceYears: 0,
+    skills: '',
+    certifications: '',
+    trainingPrograms: '',
+    location: '',
     email: '',
     mobile: '',
     password: '',
@@ -127,94 +125,52 @@ export const SkillBridgeAuthModal: React.FC<SkillBridgeAuthModalProps> = ({
     },
   ];
 
-  const handleQuickDemoFill = (role: UserRole) => {
+  const handleRoleSelect = (role: UserRole) => {
     setSelectedRole(role);
     setErrorMessage(null);
     setSuccessMessage(null);
-
-    if (role === 'student') {
-      setLoginIdentifier('rahul.sharma@skillbridge.gov.in');
-      setLoginPassword('studentPass2025');
-    } else if (role === 'trainer') {
-      setLoginIdentifier('rajesh.nair@skillbridge.gov.in');
-      setLoginPassword('trainerPass2025');
-    } else if (role === 'government') {
-      setLoginIdentifier('director.msde@skillbridge.gov.in');
-      setLoginPassword('adminSecure2025');
-    } else if (role === 'college') {
-      setLoginIdentifier('dean.engg@andhrauniversity.edu.in');
-      setLoginPassword('collegePass2025');
-    } else if (role === 'company') {
-      setLoginIdentifier('talent.acquisition@tcs.com');
-      setLoginPassword('corporatePass2025');
-    }
   };
 
-  const handleLoginSubmit = (e: React.FormEvent) => {
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setErrorMessage(null);
 
-    setTimeout(() => {
-      let loggedInUser: any = null;
-
-      if (selectedRole === 'student') {
-        const students = getStoredStudents();
-        const found = students.find((s) => s.email.toLowerCase() === loginIdentifier.toLowerCase());
-        const student = found || students[0];
-        loggedInUser = {
-          id: student.userId || 'usr-std-101',
-          studentId: student.id,
-          fullName: student.fullName,
-          email: student.email,
-          role: 'student',
-          organization: student.college,
-        };
-      } else if (selectedRole === 'trainer') {
-        const found = INITIAL_TRAINERS.find((t) => t.email.toLowerCase() === loginIdentifier.toLowerCase());
-        const trainer = found || INITIAL_TRAINERS[0];
-        loggedInUser = {
-          id: trainer.userId,
-          trainerId: trainer.id,
-          fullName: trainer.name,
-          email: trainer.email,
-          role: 'trainer',
-          organization: trainer.organization,
-        };
-      } else if (selectedRole === 'government') {
-        loggedInUser = {
-          id: 'usr-gov-001',
-          fullName: 'Dr. Rajiv Kumar (Mission Director)',
-          email: loginIdentifier || 'director.msde@skillbridge.gov.in',
-          role: 'government',
-          organization: 'Ministry of Skill Development & Entrepreneurship (MSDE)',
-        };
-      } else if (selectedRole === 'college') {
-        loggedInUser = {
-          id: 'usr-clg-001',
-          fullName: 'Dr. K. V. Subbarao (Principal)',
-          email: loginIdentifier || 'dean.engg@andhrauniversity.edu.in',
-          role: 'college',
-          organization: 'Andhra University College of Engineering',
-        };
-      } else {
-        loggedInUser = {
-          id: 'usr-cmp-001',
-          fullName: 'Nalini Menon (Head of Campus Recruitment)',
-          email: loginIdentifier || 'talent.acquisition@tcs.com',
-          role: 'company',
-          organization: 'Tata Consultancy Services',
-        };
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: loginIdentifier.trim(),
+          password: loginPassword,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Invalid credentials');
       }
+
+      const loggedInUser = {
+        id: data.user.id,
+        email: data.user.email,
+        role: data.user.role || selectedRole,
+        fullName: data.user.full_name || data.user.name || data.user.email.split('@')[0],
+        organization: data.user.organization || '',
+      };
 
       localStorage.setItem('skilltrack_user', JSON.stringify(loggedInUser));
       localStorage.setItem('skilltrack_role', loggedInUser.role);
-      localStorage.setItem('skilltrack_token', 'demo_jwt_token_' + Date.now());
+      if (data.token) {
+        localStorage.setItem('skilltrack_token', data.token);
+      }
 
       setIsLoading(false);
       onSuccess(loggedInUser);
       onClose();
-    }, 450);
+    } catch (err: any) {
+      setIsLoading(false);
+      setErrorMessage(err.message || 'Login failed. Please check your credentials.');
+    }
   };
 
   const handleRegisterSubmit = (e: React.FormEvent) => {
@@ -368,7 +324,7 @@ export const SkillBridgeAuthModal: React.FC<SkillBridgeAuthModalProps> = ({
                 <button
                   key={opt.role}
                   type="button"
-                  onClick={() => handleQuickDemoFill(opt.role)}
+                  onClick={() => handleRoleSelect(opt.role)}
                   className={`px-2.5 py-2 rounded text-left transition-all flex flex-col justify-between border ${
                     isSelected
                       ? 'bg-[#0B3B60] text-white border-[#0B3B60] shadow-xs'
@@ -426,10 +382,10 @@ export const SkillBridgeAuthModal: React.FC<SkillBridgeAuthModalProps> = ({
             </button>
           </div>
 
-          {/* 1-Click Persona Indicator */}
+          {/* Role Access Indicator */}
           <div className="hidden sm:flex items-center gap-1.5 text-[11px] text-[#0369A1] bg-[#F0F9FF] px-2.5 py-1 rounded border border-[#BAE6FD]">
             <Sparkles className="w-3.5 h-3.5 text-[#0284C7]" />
-            <span>Click any role above to pre-fill test credentials</span>
+            <span>Select your institutional role to continue</span>
           </div>
         </div>
 
