@@ -13,7 +13,7 @@ import { sidhStore } from '@/lib/sidh-store';
 export default function StudentDashboardPage() {
   const learner = sidhStore.getLearner();
   const courses = sidhStore.getCourses();
-  const activeCourse = courses[0];
+  const activeCourse = (courses && courses.length > 0) ? courses[0] : { title: 'Advanced Machine Learning & Data Systems' };
 
   return (
     <div className="space-y-6">
