@@ -1,6 +1,16 @@
 // SIDH Skill Development Platform - Central State Store & Service Abstraction
 // Supports Learner, Trainer, and Government Portals with LocalStorage persistence and realistic data.
 
+export * from './career-registry';
+import {
+  getAllCareers,
+  getCareerById,
+  findCareerByTitle,
+  calculateMultiFactorMatch,
+  MultiFactorScore,
+  CareerProfileDef,
+} from './career-registry';
+
 export type SkillProficiencyLevel = 'Beginner' | 'Intermediate' | 'Advanced';
 export type SkillCategory = 'Technical Skills' | 'Other Skills' | 'Programming Languages' | 'Tools and Technologies' | 'Soft Skills';
 
@@ -1024,6 +1034,7 @@ export interface CareerPost {
   id: string;
   postName: string;
   sector: string;
+  streamCode?: string;
   requiredQualification: string;
   minCgpa: number;
   experienceLevel: string;
@@ -1051,7 +1062,7 @@ export interface CareerMatchResult {
   post: CareerPost;
   postName: string;
   matchPercentage: number;
-  status: 'Strong Match' | 'Good Match' | 'Moderate Match' | 'Low Match';
+  status: 'Strong Match' | 'Good Match' | 'Moderate Match' | 'Low Match' | 'Developing Match';
   matchingSkills: string[];
   missingSkills: string[];
   skillGaps: SkillGapItem[];
@@ -1065,9 +1076,39 @@ export interface CareerMatchResult {
     duration: string;
     priority: SkillPriority;
   }[];
+  multiFactor?: MultiFactorScore;
+  explanations?: {
+    positive: string[];
+    advisory: string[];
+  };
 }
 
-export const CAREER_POSTS: CareerPost[] = [
+// Dynamically generate career posts from all streams in career-registry
+const REGISTRY_CAREER_POSTS: CareerPost[] = getAllCareers().map((c) => ({
+  id: c.id,
+  postName: c.title,
+  sector: c.sector,
+  streamCode: c.streamCode,
+  requiredQualification: `Minimum ${c.minCgpa} CGPA in ${c.streamCode} or related discipline`,
+  minCgpa: c.minCgpa,
+  experienceLevel: 'Entry Level (0-2 Years)',
+  salaryRange: c.salaryRange,
+  openings: c.jobRoles.reduce((acc, j) => acc + (j.openings || 10), 0) || 30,
+  description: c.description,
+  requiredSkills: c.requiredSkills.map((rs) => ({
+    skill: rs.skill,
+    requiredLevel: rs.requiredLevel,
+    priority: rs.priority,
+    whyRequired: rs.whyRequired,
+    recommendedCourse: rs.recommendedCourseTitle,
+    courseId: rs.recommendedCourseId,
+    difficulty: rs.requiredLevel,
+    duration: rs.estimatedDuration,
+  })),
+}));
+
+// Legacy aliases for backward compatibility with existing query params & tests
+const LEGACY_ALIASES: CareerPost[] = [
   {
     id: 'post-python',
     postName: 'Junior Python Developer',
@@ -1100,295 +1141,10 @@ export const CAREER_POSTS: CareerPost[] = [
         duration: '25 Hours',
       },
       {
-        skill: 'Git',
-        requiredLevel: 'Intermediate',
-        priority: 'Medium',
-        whyRequired: 'Collaborative version control, pull requests, and CI/CD pipelines',
-        recommendedCourse: 'Enterprise Git Branching & CI/CD Pipelines',
-        courseId: 'crs-004',
-        difficulty: 'Intermediate',
-        duration: '20 Hours',
-      },
-      {
         skill: 'REST APIs',
         requiredLevel: 'Intermediate',
         priority: 'High',
-        whyRequired: 'Building scalable web services with FastAPI, Django, or Flask',
-        recommendedCourse: 'RESTful API Engineering with FastAPI & Django',
-        courseId: 'crs-001',
-        difficulty: 'Intermediate',
-        duration: '35 Hours',
-      },
-      {
-        skill: 'Problem Solving',
-        requiredLevel: 'Intermediate',
-        priority: 'Medium',
-        whyRequired: 'Algorithmic thinking and data structures optimization',
-        recommendedCourse: 'Data Structures & Algorithmic Problem Solving',
-        courseId: 'crs-002',
-        difficulty: 'Intermediate',
-        duration: '30 Hours',
-      },
-    ],
-  },
-  {
-    id: 'post-fullstack',
-    postName: 'Full Stack Web Developer',
-    sector: 'IT-ITeS & Software',
-    requiredQualification: 'B.Tech / B.E / MCA in Computer Science, IT or related disciplines',
-    minCgpa: 6.5,
-    experienceLevel: 'Entry to Mid Level',
-    salaryRange: '₹5.5 - ₹9.5 LPA',
-    openings: 480,
-    description: 'Architect responsive user interfaces and high-performance server APIs using React, Node.js, and cloud datastores.',
-    requiredSkills: [
-      {
-        skill: 'HTML5 & CSS3',
-        requiredLevel: 'Advanced',
-        priority: 'Medium',
-        whyRequired: 'Accessible semantic layouts and responsive design',
-        recommendedCourse: 'Advanced CSS Grid, Flexbox & Responsive UI',
-        courseId: 'crs-001',
-        difficulty: 'Advanced',
-        duration: '20 Hours',
-      },
-      {
-        skill: 'JavaScript ES6',
-        requiredLevel: 'Advanced',
-        priority: 'High',
-        whyRequired: 'Asynchronous workflows, functional patterns, and TypeScript',
-        recommendedCourse: 'Modern JavaScript & Async Control Flow',
-        courseId: 'crs-001',
-        difficulty: 'Advanced',
-        duration: '30 Hours',
-      },
-      {
-        skill: 'React.js',
-        requiredLevel: 'Advanced',
-        priority: 'High',
-        whyRequired: 'Component state architecture, hooks, and Next.js rendering',
-        recommendedCourse: 'React Hooks, State & Component Lifecycle',
-        courseId: 'crs-001',
-        difficulty: 'Advanced',
-        duration: '45 Hours',
-      },
-      {
-        skill: 'SQL',
-        requiredLevel: 'Intermediate',
-        priority: 'Medium',
-        whyRequired: 'Relational data schema, normalization, and query performance',
-        recommendedCourse: 'Enterprise Database Systems & Normalization',
-        courseId: 'crs-001',
-        difficulty: 'Intermediate',
-        duration: '25 Hours',
-      },
-      {
-        skill: 'REST APIs',
-        requiredLevel: 'Intermediate',
-        priority: 'High',
-        whyRequired: 'Backend endpoint consumption and JSON payload serialization',
-        recommendedCourse: 'Node.js, Express & Enterprise REST APIs',
-        courseId: 'crs-001',
-        difficulty: 'Intermediate',
-        duration: '40 Hours',
-      },
-      {
-        skill: 'Git',
-        requiredLevel: 'Intermediate',
-        priority: 'Low',
-        whyRequired: 'Collaborative code reviews and release automation',
-        recommendedCourse: 'Enterprise Git Branching & CI/CD Pipelines',
-        courseId: 'crs-004',
-        difficulty: 'Intermediate',
-        duration: '20 Hours',
-      },
-    ],
-  },
-  {
-    id: 'post-bi-analyst',
-    postName: 'Data Analyst / BI Specialist',
-    sector: 'BFSI & IT Analytics',
-    requiredQualification: 'B.Tech, B.Sc (Maths/Stats/CS), BCA, or Economics with analytics background',
-    minCgpa: 6.0,
-    experienceLevel: 'Entry Level',
-    salaryRange: '₹4.8 - ₹8.0 LPA',
-    openings: 290,
-    description: 'Transform complex multi-source organizational datasets into executive decision dashboards and automated reporting pipelines.',
-    requiredSkills: [
-      {
-        skill: 'SQL',
-        requiredLevel: 'Advanced',
-        priority: 'High',
-        whyRequired: 'Complex aggregations, window functions, and CTE data modeling',
-        recommendedCourse: 'Advanced SQL & Window Functions for Analytics',
-        courseId: 'crs-001',
-        difficulty: 'Advanced',
-        duration: '30 Hours',
-      },
-      {
-        skill: 'Python',
-        requiredLevel: 'Intermediate',
-        priority: 'High',
-        whyRequired: 'Data wrangling with Pandas, NumPy, and automation scripts',
-        recommendedCourse: 'Python for Data Analysis & Pandas Pipelines',
-        courseId: 'crs-003',
-        difficulty: 'Intermediate',
-        duration: '35 Hours',
-      },
-      {
-        skill: 'Problem Solving',
-        requiredLevel: 'Intermediate',
-        priority: 'Medium',
-        whyRequired: 'Statistical reasoning, outlier detection, and anomaly diagnosis',
-        recommendedCourse: 'Business Analytics Foundations & Hypothesis Testing',
-        courseId: 'crs-003',
-        difficulty: 'Intermediate',
-        duration: '25 Hours',
-      },
-    ],
-  },
-  {
-    id: 'post-cloud-devops',
-    postName: 'Cloud & DevOps Associate',
-    sector: 'Cloud & Infrastructure',
-    requiredQualification: 'B.Tech / Diploma in CS, IT, or Electronics',
-    minCgpa: 6.0,
-    experienceLevel: 'Entry to Associate Level',
-    salaryRange: '₹5.0 - ₹9.0 LPA',
-    openings: 240,
-    description: 'Provision scalable container clusters, configure CI/CD delivery pipelines, and monitor cloud uptime.',
-    requiredSkills: [
-      {
-        skill: 'Git',
-        requiredLevel: 'Intermediate',
-        priority: 'Medium',
-        whyRequired: 'GitOps workflows and branch protection rules',
-        recommendedCourse: 'Enterprise Git Branching & CI/CD Pipelines',
-        courseId: 'crs-004',
-        difficulty: 'Intermediate',
-        duration: '20 Hours',
-      },
-      {
-        skill: 'REST APIs',
-        requiredLevel: 'Intermediate',
-        priority: 'Medium',
-        whyRequired: 'Configuring webhooks, cloud API gateways, and telemetry endpoints',
-        recommendedCourse: 'RESTful API Engineering with FastAPI & Django',
-        courseId: 'crs-001',
-        difficulty: 'Intermediate',
-        duration: '35 Hours',
-      },
-      {
-        skill: 'Python',
-        requiredLevel: 'Intermediate',
-        priority: 'Medium',
-        whyRequired: 'Infrastructure automation scripts and CLI utility development',
-        recommendedCourse: 'Python Automation for Cloud Systems',
-        courseId: 'crs-002',
-        difficulty: 'Intermediate',
-        duration: '25 Hours',
-      },
-      {
-        skill: 'Problem Solving',
-        requiredLevel: 'Intermediate',
-        priority: 'High',
-        whyRequired: 'Production outage diagnosis and root-cause post-mortems',
-        recommendedCourse: 'DevOps Engineering, Docker Containers & Kubernetes',
-        courseId: 'crs-004',
-        difficulty: 'Intermediate',
-        duration: '45 Hours',
-      },
-    ],
-  },
-  {
-    id: 'post-cybersecurity',
-    postName: 'Cybersecurity Analyst (SOC Tier 1)',
-    sector: 'Cybersecurity & Defense',
-    requiredQualification: 'B.Tech / B.Sc in Information Security, Computer Science, or Electronics',
-    minCgpa: 6.5,
-    experienceLevel: 'Entry Level',
-    salaryRange: '₹5.2 - ₹8.8 LPA',
-    openings: 180,
-    description: 'Triage real-time threat telemetry, analyze suspicious network packet captures, and enforce defensive posture.',
-    requiredSkills: [
-      {
-        skill: 'Python',
-        requiredLevel: 'Intermediate',
-        priority: 'Medium',
-        whyRequired: 'Security automation scripts, IOC scraping, and payload parsing',
-        recommendedCourse: 'Python for Security Practitioners',
-        courseId: 'crs-002',
-        difficulty: 'Intermediate',
-        duration: '25 Hours',
-      },
-      {
-        skill: 'REST APIs',
-        requiredLevel: 'Intermediate',
-        priority: 'Medium',
-        whyRequired: 'Integrating SIEM platforms with threat intelligence feeds',
-        recommendedCourse: 'RESTful API Engineering with FastAPI & Django',
-        courseId: 'crs-001',
-        difficulty: 'Intermediate',
-        duration: '35 Hours',
-      },
-      {
-        skill: 'Problem Solving',
-        requiredLevel: 'Intermediate',
-        priority: 'High',
-        whyRequired: 'Incident triage and security forensic analysis',
-        recommendedCourse: 'Cyber Defense & Web Application Security',
-        courseId: 'crs-005',
-        difficulty: 'Intermediate',
-        duration: '30 Hours',
-      },
-    ],
-  },
-  {
-    id: 'post-aiml',
-    postName: 'AI / Machine Learning Junior Engineer',
-    sector: 'Artificial Intelligence & Deep Tech',
-    requiredQualification: 'B.Tech / M.Tech in CS, AI, Data Science with strong algorithmic foundations',
-    minCgpa: 7.0,
-    experienceLevel: 'Entry to Research Associate',
-    salaryRange: '₹6.5 - ₹12.0 LPA',
-    openings: 210,
-    description: 'Train predictive models, fine-tune transformer weights, and deploy real-time inference microservices.',
-    requiredSkills: [
-      {
-        skill: 'Python',
-        requiredLevel: 'Advanced',
-        priority: 'High',
-        whyRequired: 'NumPy vectorization, PyTorch pipelines, and model evaluation',
-        recommendedCourse: 'Applied Deep Learning & PyTorch Architecture',
-        courseId: 'crs-002',
-        difficulty: 'Advanced',
-        duration: '50 Hours',
-      },
-      {
-        skill: 'SQL',
-        requiredLevel: 'Intermediate',
-        priority: 'Medium',
-        whyRequired: 'Extracting training datasets and feature engineering from data warehouses',
-        recommendedCourse: 'Enterprise Database Systems & Normalization',
-        courseId: 'crs-001',
-        difficulty: 'Intermediate',
-        duration: '25 Hours',
-      },
-      {
-        skill: 'Problem Solving',
-        requiredLevel: 'Advanced',
-        priority: 'High',
-        whyRequired: 'Mathematical optimization, gradient descent, and loss minimization',
-        recommendedCourse: 'Algorithmic Mathematics & Statistical Modeling',
-        courseId: 'crs-002',
-        difficulty: 'Advanced',
-        duration: '40 Hours',
-      },
-      {
-        skill: 'REST APIs',
-        requiredLevel: 'Intermediate',
-        priority: 'Medium',
-        whyRequired: 'Deploying model prediction endpoints via FastAPI and container runtimes',
+        whyRequired: 'API contract design, serialization, and frontend integration',
         recommendedCourse: 'RESTful API Engineering with FastAPI & Django',
         courseId: 'crs-001',
         difficulty: 'Intermediate',
@@ -1398,13 +1154,77 @@ export const CAREER_POSTS: CareerPost[] = [
   },
 ];
 
+export const CAREER_POSTS: CareerPost[] = [...REGISTRY_CAREER_POSTS, ...LEGACY_ALIASES];
+
 export function calculateCareerMatch(profile: LearnerProfile, post: CareerPost): CareerMatchResult {
   const norm = (s: string) => (s || '').toLowerCase().trim();
 
-  // Helper to find a skill in candidate profile
+  // Try matching against registry career definition for full 7-factor engine
+  const regCareer =
+    getCareerById(post.id) ||
+    findCareerByTitle(post.postName) ||
+    (post.id === 'post-python' ? findCareerByTitle('Full Stack Web Developer') : undefined);
+
+  if (regCareer) {
+    const mf = calculateMultiFactorMatch(profile, regCareer);
+    const matchingSkills = mf.skillBreakdown.filter((s) => s.status === 'Mastered').map((s) => s.skill);
+    const missingSkills = mf.skillBreakdown.filter((s) => s.status !== 'Mastered').map((s) => s.skill);
+
+    const skillGaps: SkillGapItem[] = mf.skillBreakdown.map((s) => {
+      const studentSkill = (profile.skills || []).find((sk) => norm(sk.name) === norm(s.skill));
+      const currentLevel = studentSkill?.proficiencyLevel || (studentSkill && studentSkill.proficiency && studentSkill.proficiency >= 80 ? 'Advanced' : studentSkill && studentSkill.proficiency && studentSkill.proficiency >= 60 ? 'Intermediate' : studentSkill ? 'Beginner' : 'None');
+      const reqSpec = regCareer.requiredSkills.find((rs) => rs.skill === s.skill);
+
+      let gap: GapCategory = 'Medium Gap';
+      if (s.status === 'Mastered') gap = 'No Gap';
+      else if (s.status === 'Critical Gap') gap = 'High Gap';
+
+      return {
+        skill: s.skill,
+        currentLevel,
+        requiredLevel: reqSpec?.requiredLevel || 'Intermediate',
+        gap,
+        priority: s.priority,
+        gapScore: s.gapPercentage,
+        recommendedCourse: s.recommendedCourse,
+        courseId: s.courseId,
+        difficulty: reqSpec?.requiredLevel || 'Intermediate',
+        estimatedHours: reqSpec?.estimatedDuration || '30 Hours',
+        whyRequired: s.whyRequired,
+      };
+    });
+
+    const recommendedLearning = skillGaps
+      .filter((g) => g.gap !== 'No Gap')
+      .map((g) => ({
+        skill: g.skill,
+        whyRequired: g.whyRequired,
+        courseTitle: g.recommendedCourse,
+        courseId: g.courseId,
+        difficulty: g.difficulty,
+        duration: g.estimatedHours,
+        priority: g.priority,
+      }));
+
+    return {
+      post,
+      postName: post.postName,
+      matchPercentage: mf.totalScore,
+      status: mf.status,
+      matchingSkills,
+      missingSkills,
+      skillGaps,
+      requiredQualification: post.requiredQualification,
+      recommendedLearning,
+      multiFactor: mf,
+      explanations: mf.explanations,
+    };
+  }
+
+  // Fallback heuristic matching for non-registry posts
   const findSkill = (reqName: string) => {
     const q = norm(reqName);
-    return profile.skills.find((s) => {
+    return (profile.skills || []).find((s) => {
       const sn = norm(s.name);
       return sn === q || sn.includes(q) || q.includes(sn);
     });
@@ -1554,9 +1374,20 @@ export function calculateCareerMatch(profile: LearnerProfile, post: CareerPost):
 }
 
 export function getCareerRecommendations(profile: LearnerProfile): CareerMatchResult[] {
-  return CAREER_POSTS.map((post) => calculateCareerMatch(profile, post)).sort(
-    (a, b) => b.matchPercentage - a.matchPercentage
-  );
+  const norm = (s?: string) => (s || '').toLowerCase().trim();
+  const target = norm(profile.targetRole);
+  const branch = norm(profile.branch);
+
+  const results = CAREER_POSTS.map((post) => calculateCareerMatch(profile, post));
+
+  return results.sort((a, b) => {
+    const aIsTarget = target && (norm(a.postName).includes(target) || target.includes(norm(a.postName)));
+    const bIsTarget = target && (norm(b.postName).includes(target) || target.includes(norm(b.postName)));
+    if (aIsTarget && !bIsTarget) return -1;
+    if (!aIsTarget && bIsTarget) return 1;
+
+    return b.matchPercentage - a.matchPercentage;
+  });
 }
 
 export function calculateProfileCompletion(profile: LearnerProfile) {
@@ -1841,6 +1672,7 @@ const MOCK_LEARNERS_LIST = [
 export const sidhStore = {
   getLearners: () => [getLearner(), ...MOCK_LEARNERS_LIST.slice(1)],
   getLearner: () => getLearner(),
+  saveLearner: (learner: LearnerProfile) => saveLearner(learner),
   getLearnerById: (id: string) => {
     if (id === 'lrn-101' || id === 'learner-1') return getLearner();
     return MOCK_LEARNERS_LIST.find((l) => l.id === id) || getLearner();
