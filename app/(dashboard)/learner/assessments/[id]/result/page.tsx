@@ -8,12 +8,11 @@ import {
   CheckCircle2,
   XCircle,
   ArrowRight,
-  RotateCcw,
-  BookOpen,
+  ArrowLeft,
   Target,
-  FileText,
+  Sparkles,
+  BookOpen,
 } from 'lucide-react';
-import { PageHeader } from '@/components/ui/PageHeader';
 import { INITIAL_ASSESSMENTS } from '@/lib/sidh-store';
 
 function AssessmentResultContent() {
@@ -21,85 +20,133 @@ function AssessmentResultContent() {
   const searchParams = useSearchParams();
 
   const assessmentId = (params?.id as string) || 'asm-101';
-  const score = Number(searchParams.get('score')) || 80;
-  const correct = Number(searchParams.get('correct')) || 4;
-  const total = Number(searchParams.get('total')) || 5;
+  const score = Number(searchParams.get('score')) || 88;
+  const correct = Number(searchParams.get('correct')) || 18;
+  const total = Number(searchParams.get('total')) || 20;
 
-  const assessment = INITIAL_ASSESSMENTS.find((a) => a.id === assessmentId) || INITIAL_ASSESSMENTS[0];
+  const assessment = INITIAL_ASSESSMENTS.find((a) => a.id === assessmentId) || {
+    id: 'asm-101',
+    title: 'Data Structures & Algorithmic Problem Solving',
+    skill: 'Algorithms & Problem Solving',
+    passingScore: 75,
+  };
+
   const isPassed = score >= assessment.passingScore;
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
-      <PageHeader
-        title="Assessment Result & Diagnostic Transcript"
-        subtitle={`Evaluation report for: ${assessment.title}`}
-        badge="Official Assessment Record"
-        breadcrumbs={[
-          { label: 'Assessments', href: '/learner/assessments' },
-          { label: 'Scorecard' },
-        ]}
-      />
+    <div className="space-y-8 max-w-4xl mx-auto">
+      {/* Back Navigation */}
+      <div>
+        <Link
+          href="/learner/assessments"
+          className="text-xs font-semibold text-slate-500 hover:text-slate-800 flex items-center gap-1 transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span>Back to Assessments</span>
+        </Link>
+      </div>
 
-      {/* Main Result Card */}
-      <div className="bg-white border border-[#CBD5E1] rounded-lg p-6 sm:p-8 shadow-xs space-y-6 text-center">
-        <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto ${
-          isPassed ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'
-        }`}>
-          {isPassed ? <CheckCircle2 className="w-8 h-8" /> : <XCircle className="w-8 h-8" />}
-        </div>
+      {/* 1. TOP RESULT CARD */}
+      <div className="bg-white rounded-xl border border-slate-200 p-6 sm:p-8 shadow-xs space-y-6">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-6 pb-6 border-b border-slate-100">
+          <div className="flex items-center gap-5">
+            <div
+              className={`w-16 h-16 rounded-2xl flex items-center justify-center font-bold text-2xl shrink-0 ${
+                isPassed ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'
+              }`}
+            >
+              {score}%
+            </div>
 
-        <div>
-          <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
-            isPassed ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-rose-50 text-rose-800 border border-rose-200'
-          }`}>
-            {isPassed ? 'Passed Benchmark' : 'Needs Improvement'}
-          </span>
-          <h2 className="text-2xl font-black text-[#0F172A] mt-2">
-            Overall Score: {score}%
-          </h2>
-          <p className="text-xs text-[#64748B] mt-1">
-            You answered {correct} out of {total} questions correctly. Passing requirement: {assessment.passingScore}%.
-          </p>
-        </div>
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span
+                  className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                    isPassed ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'
+                  }`}
+                >
+                  {isPassed ? 'Status: Passed' : 'Status: Needs Improvement'}
+                </span>
+                <span className="text-xs text-slate-500">
+                  Passing Benchmark: ≥ {assessment.passingScore}%
+                </span>
+              </div>
 
-        {/* Diagnostic Breakdown */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-[#E2E8F0] text-left text-xs">
-          <div className="p-3 bg-[#F8FAFC] border border-[#CBD5E1] rounded">
-            <span className="text-[10px] font-bold text-[#64748B] uppercase block">Skill Evaluated</span>
-            <strong className="text-[#0F172A] text-sm">{assessment.skill}</strong>
-            <p className="text-[11px] text-emerald-700 mt-0.5">Proficiency Verified</p>
-          </div>
+              <h1 className="text-lg sm:text-xl font-bold text-slate-900">
+                {assessment.title}
+              </h1>
 
-          <div className="p-3 bg-emerald-50 border border-emerald-200 rounded">
-            <span className="text-[10px] font-bold text-emerald-800 uppercase block">Identified Strengths</span>
-            <strong className="text-emerald-900 text-xs">OOP Design & Class Structures</strong>
-            <p className="text-[11px] text-emerald-800 mt-0.5">High accuracy in memory & inheritance</p>
-          </div>
-
-          <div className="p-3 bg-amber-50 border border-amber-200 rounded">
-            <span className="text-[10px] font-bold text-amber-800 uppercase block">Target Remediation</span>
-            <strong className="text-amber-900 text-xs">Graph & Tree Traversal</strong>
-            <p className="text-[11px] text-amber-800 mt-0.5">Review BFS vs DFS queue mechanics</p>
-          </div>
-        </div>
-
-        {/* Next Step Recommendations */}
-        <div className="pt-4 border-t border-[#E2E8F0] text-left space-y-3">
-          <h3 className="font-bold text-xs text-[#0F172A] uppercase tracking-wider">
-            Recommended Actionable Next Steps:
-          </h3>
-          <div className="flex flex-col sm:flex-row items-center justify-between p-4 bg-[#F0F9FF] border border-[#BAE6FD] rounded gap-3">
-            <div>
-              <h4 className="font-bold text-xs text-[#0C4A6E]">
-                Enterprise Java Programming & Data Structures Course
-              </h4>
-              <p className="text-[11px] text-[#0369A1] mt-0.5">
-                Targeted modules to close remaining algorithmic complexity gaps.
+              <p className="text-xs text-slate-500">
+                You answered <strong className="text-slate-800">{correct}</strong> out of <strong className="text-slate-800">{total}</strong> questions correctly.
               </p>
             </div>
+          </div>
+
+          <div className="text-right sm:border-l sm:border-slate-100 sm:pl-6 space-y-0.5 shrink-0 w-full sm:w-auto">
+            <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
+              Skill Level Verified
+            </span>
+            <span className="text-base font-bold text-blue-700 block">
+              Advanced Level
+            </span>
+            <span className="text-xs text-slate-500">Credited to Skill Passport</span>
+          </div>
+        </div>
+
+        {/* 2. STRENGTHS & AREAS TO IMPROVE */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="p-4 rounded-xl border border-emerald-100 bg-emerald-50/30 space-y-2">
+            <span className="text-xs font-bold uppercase tracking-wider text-emerald-800 block">
+              Strengths Demonstrated
+            </span>
+            <ul className="space-y-1.5 text-xs text-slate-700">
+              <li className="flex items-start gap-2">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 mt-0.5 shrink-0" />
+                <span>Object-Oriented patterns, inheritance, and encapsulation.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 mt-0.5 shrink-0" />
+                <span>Asynchronous task execution and event handling logic.</span>
+              </li>
+            </ul>
+          </div>
+
+          <div className="p-4 rounded-xl border border-amber-100 bg-amber-50/30 space-y-2">
+            <span className="text-xs font-bold uppercase tracking-wider text-amber-800 block">
+              Areas to Improve
+            </span>
+            <ul className="space-y-1.5 text-xs text-slate-700">
+              <li className="flex items-start gap-2">
+                <span className="w-3.5 h-3.5 rounded-full bg-amber-200 text-amber-800 flex items-center justify-center font-bold text-[10px] mt-0.5 shrink-0">!</span>
+                <span>Relational transaction isolation levels and indexing structures.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="w-3.5 h-3.5 rounded-full bg-amber-200 text-amber-800 flex items-center justify-center font-bold text-[10px] mt-0.5 shrink-0">!</span>
+                <span>Graph traversal optimization (BFS vs. DFS memory complexity).</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        {/* 3. RECOMMENDED NEXT STEP: Connects assessment → skill gap → learning */}
+        <div className="p-5 rounded-xl border border-slate-200 bg-slate-50 space-y-3">
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-500 block">
+            Recommended Next Step on Your Learning Pathway:
+          </span>
+
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <h3 className="font-bold text-sm text-slate-900">
+                Relational Database Architecture & SQL Analytics
+              </h3>
+              <p className="text-xs text-slate-600 mt-0.5">
+                Targeted modules specifically designed to close your identified database normalization and indexing gaps.
+              </p>
+            </div>
+
             <Link
-              href="/learner/courses/crs-002"
-              className="h-8 px-4 rounded bg-[#0B3B60] text-white text-xs font-bold flex items-center gap-1.5 shrink-0 hover:bg-[#002541]"
+              href="/learner/courses/crs-003"
+              className="px-4 py-2 rounded-lg bg-blue-700 hover:bg-blue-800 text-white font-semibold text-xs transition-colors flex items-center gap-1.5 shrink-0 shadow-xs"
             >
               <span>View Course</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -107,30 +154,23 @@ function AssessmentResultContent() {
           </div>
         </div>
 
-        {/* Action buttons */}
-        <div className="pt-4 border-t border-[#E2E8F0] flex items-center justify-between">
+        {/* Action Buttons */}
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
           <Link
-            href="/learner/assessments"
-            className="text-xs font-semibold text-[#64748B] hover:text-[#0F172A]"
+            href="/learner/skills"
+            className="px-4 py-2 rounded-lg border border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold text-xs transition-colors flex items-center gap-1.5"
           >
-            ← Back to Assessments
+            <Target className="w-3.5 h-3.5 text-slate-500" />
+            <span>Inspect Skill Gap</span>
           </Link>
-          <div className="flex items-center gap-2">
-            <Link
-              href="/learner/skill-gap"
-              className="h-9 px-4 rounded border border-[#CBD5E1] hover:bg-[#F1F5F9] text-[#0F172A] font-bold text-xs flex items-center gap-1.5"
-            >
-              <Target className="w-3.5 h-3.5 text-[#0B3B60]" />
-              <span>Inspect Skill Gap</span>
-            </Link>
-            <Link
-              href="/learner/certificates"
-              className="h-9 px-4 rounded bg-[#0B3B60] hover:bg-[#002541] text-white font-bold text-xs flex items-center gap-1.5"
-            >
-              <Award className="w-3.5 h-3.5" />
-              <span>View Verified Certificates</span>
-            </Link>
-          </div>
+
+          <Link
+            href="/learner/certificates"
+            className="px-4 py-2 rounded-lg bg-blue-700 hover:bg-blue-800 text-white font-semibold text-xs transition-colors flex items-center gap-1.5 shadow-xs"
+          >
+            <Award className="w-3.5 h-3.5" />
+            <span>View Verified Certificates</span>
+          </Link>
         </div>
       </div>
     </div>
@@ -139,9 +179,8 @@ function AssessmentResultContent() {
 
 export default function AssessmentResultPage() {
   return (
-    <Suspense fallback={<div className="p-6 text-sm text-slate-500">Loading assessment results...</div>}>
+    <Suspense fallback={<div className="p-8 text-xs text-slate-500">Loading scorecard...</div>}>
       <AssessmentResultContent />
     </Suspense>
   );
 }
-
