@@ -52,20 +52,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ role = 'student', onLogout }) 
       targetPath = '/government/dashboard';
     }
 
-    const saved = localStorage.getItem('skilltrack_user');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        parsed.role = targetRole;
-        localStorage.setItem('skilltrack_user', JSON.stringify(parsed));
-        localStorage.setItem('skilltrack_role', targetRole);
-        router.push(targetPath);
-        router.refresh();
-        return;
-      } catch {}
-    }
-
-    router.push(`/login?role=${targetRole}`);
+    localStorage.setItem('skilltrack_user', JSON.stringify(targetUser));
+    localStorage.setItem('skilltrack_role', targetRole);
+    router.push(targetPath);
+    router.refresh();
   };
 
   // Build role-tailored navigation groups
