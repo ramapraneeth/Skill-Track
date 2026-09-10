@@ -125,6 +125,7 @@ model jobs {
   required_skills     Json?                 @db.Json
   created_at          DateTime?             @db.Timestamptz(6)
   employment_outcomes employment_outcomes[]
+  job_applications    job_applications[]
 
   @@index([district], map: "ix_jobs_district")
   @@index([sector, state], map: "ix_jobs_sector_state")
@@ -180,6 +181,9 @@ model learners {
   users                       users?                     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   predictions                 predictions[]
   self_employment_outcomes    self_employment_outcomes[]
+  job_applications            job_applications[]
+  course_enrollments          course_enrollments[]
+  learner_preferences         learner_preferences?
 
   @@index([current_programme_id], map: "ix_learners_programme")
   @@index([provider_id], map: "ix_learners_provider")
@@ -198,6 +202,7 @@ model predictions {
   risk_factors              Json?     @db.Json
   model_version             String?   @db.VarChar(50)
   recommended_interventions Json?     @db.Json
+  data_source               String?   @default("CALCULATED") @db.VarChar(50)
   created_at                DateTime? @db.Timestamptz(6)
   learners                  learners  @relation(fields: [learner_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
@@ -256,6 +261,7 @@ model skills {
   description    String?
   created_at     DateTime?        @db.Timestamptz(6)
   learner_skills learner_skills[]
+  course_skills  course_skills[]
 
   @@index([category], map: "ix_skills_category")
   @@index([sector], map: "ix_skills_sector")
@@ -277,6 +283,7 @@ model training_providers {
   created_at             DateTime?    @db.Timestamptz(6)
   learners               learners[]
   programmes             programmes[]
+  courses                courses[]
   users                  users?       @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@index([state, district], map: "ix_tp_state_district")
@@ -298,3 +305,84 @@ model users {
 
   @@index([role], map: "ix_users_role")
 }
+
+model courses {
+  id                 String               @id @db.VarChar(36)
+  provider_id        String?              @db.VarChar(36)
+  code               String               @unique(map: "ix_courses_code") @db.VarChar(50)
+  title              String               @db.VarChar(200)
+  description        String?
+  sector             String               @db.VarChar(100)
+  nsqf_level         Int?
+  duration_hours     Int?
+  is_active          Boolean?             @default(true)
+  created_at         DateTime?            @default(now()) @db.Timestamptz(6)
+  training_providers training_providers?  @relation(fields: [provider_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  course_skills      course_skills[]
+  course_enrollments course_enrollments[]
+
+  @@index([sector], map: "ix_courses_sector")
+  @@index([provider_id], map: "ix_courses_provider")
+}
+
+model course_skills {
+  id                 String    @id @db.VarChar(36)
+  course_id          String    @db.VarChar(36)
+  skill_id           String    @db.VarChar(36)
+  proficiency_gained String?   @db.VarChar(50)
+  weight             Float?    @default(1.0)
+  created_at         DateTime? @default(now()) @db.Timestamptz(6)
+  courses            courses   @relation(fields: [course_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  skills             skills    @relation(fields: [skill_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([course_id, skill_id], map: "uq_course_skill")
+  @@index([course_id], map: "ix_cs_course")
+  @@index([skill_id], map: "ix_cs_skill")
+}
+
+model job_applications {
+  id          String    @id @db.VarChar(36)
+  learner_id  String    @db.VarChar(36)
+  job_id      String    @db.VarChar(36)
+  match_score Float?
+  status      String?   @db.VarChar(50)
+  applied_at  DateTime? @default(now()) @db.Timestamptz(6)
+  notes       String?
+  learners    learners  @relation(fields: [learner_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  jobs        jobs      @relation(fields: [job_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([learner_id], map: "ix_ja_learner")
+  @@index([job_id], map: "ix_ja_job")
+  @@index([status], map: "ix_ja_status")
+}
+
+model learner_preferences {
+  id                  String    @id @db.VarChar(36)
+  learner_id          String    @unique(map: "uq_learner_pref") @db.VarChar(36)
+  target_role         String?   @db.VarChar(150)
+  preferred_sector    String?   @db.VarChar(100)
+  preferred_state     String?   @db.VarChar(100)
+  min_expected_salary Float?
+  created_at          DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at          DateTime? @db.Timestamptz(6)
+  learners            learners  @relation(fields: [learner_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([target_role], map: "ix_lp_target_role")
+}
+
+model course_enrollments {
+  id           String    @id @db.VarChar(36)
+  learner_id   String    @db.VarChar(36)
+  course_id    String    @db.VarChar(36)
+  status       String?   @db.VarChar(50)
+  progress_pct Int?      @default(0)
+  completed_at DateTime? @db.Timestamptz(6)
+  created_at   DateTime? @default(now()) @db.Timestamptz(6)
+  learners     learners  @relation(fields: [learner_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  courses      courses   @relation(fields: [course_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([learner_id, course_id], map: "uq_learner_course")
+  @@index([learner_id], map: "ix_ce_learner")
+  @@index([course_id], map: "ix_ce_course")
+}
+

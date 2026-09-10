@@ -23,6 +23,7 @@ import {
   Sparkles,
   Shield,
   Zap,
+  Loader2,
 } from 'lucide-react';
 import clsx from 'clsx';
 import { UserRole } from '@/types/auth';
@@ -35,6 +36,11 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({ role = 'student', onLogout }) => {
   const pathname = usePathname();
   const router = useRouter();
+  const [pendingHref, setPendingHref] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    setPendingHref(null);
+  }, [pathname]);
 
   const handleRoleQuickSwitch = (targetRole: UserRole) => {
     let targetUser: any = null;
@@ -74,7 +80,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ role = 'student', onLogout }) 
     localStorage.setItem('skilltrack_user', JSON.stringify(targetUser));
     localStorage.setItem('skilltrack_role', targetRole);
     router.push(targetPath);
-    window.location.reload();
+    router.refresh();
   };
 
   // Build role-tailored navigation groups
@@ -161,19 +167,29 @@ export const Sidebar: React.FC<SidebarProps> = ({ role = 'student', onLogout }) 
               {group.items.map((item) => {
                 const Icon = item.icon;
                 const isActive = pathname === item.href;
+                const isPending = pendingHref === item.href && !isActive;
                 return (
                   <Link
                     key={item.href}
                     href={item.href}
+                    prefetch={true}
+                    onClick={() => {
+                      if (!isActive) setPendingHref(item.href);
+                    }}
                     className={clsx(
-                      'flex items-center gap-2.5 px-3 py-2 rounded text-xs font-semibold transition-colors',
+                      'flex items-center justify-between px-3 py-2 rounded text-xs font-semibold transition-colors',
                       isActive
                         ? 'bg-[#0B3B60] text-white shadow-xs'
+                        : isPending
+                        ? 'bg-[#E2E8F0] text-[#0B3B60]'
                         : 'text-[#334E68] hover:bg-[#F0F4F8] hover:text-[#0B3B60]'
                     )}
                   >
-                    <Icon className="w-4 h-4 shrink-0" />
-                    <span>{item.label}</span>
+                    <div className="flex items-center gap-2.5">
+                      <Icon className="w-4 h-4 shrink-0" />
+                      <span>{item.label}</span>
+                    </div>
+                    {isPending && <Loader2 className="w-3.5 h-3.5 animate-spin text-[#006876] shrink-0" />}
                   </Link>
                 );
               })}
