@@ -3,20 +3,41 @@
 @tailwind utilities;
 
 :root {
-  --gov-blue: #0B3B60;
-  --gov-navy: #002541;
-  --gov-teal: #006876;
-  --gov-orange: #E65100;
-  --gov-border: #D1D9E2;
-  --gov-bg: #F8FAFC;
+  --gov-white: #FFFFFF;
+  --gov-bg: #F7FAFE;
+  --gov-very-light-blue: #F2F8FF;
+  --gov-light-blue: #EAF4FF;
+  --gov-soft-blue: #E1F0FF;
+  --gov-navy: #0B2F55;
+  --gov-secondary-navy: #153F6B;
+  --gov-blue: #1769E0;
+  --gov-bright-blue: #2563EB;
+  --gov-border: #CFE3FA;
+  --gov-green: #16A36A;
+  --gov-orange: #F59E0B;
 }
 
 body {
   background-color: var(--gov-bg);
-  color: #102A43;
-  font-family: 'Public Sans', system-ui, -apple-system, sans-serif;
+  color: #0B2F55;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
   font-feature-settings: 'tnum' on, 'lnum' on;
   -webkit-font-smoothing: antialiased;
+}
+
+.gov-card-shadow {
+  box-shadow: 0 4px 20px rgba(18, 52, 91, 0.06);
+}
+
+.gov-card-shadow:hover {
+  box-shadow: 0 8px 28px rgba(18, 52, 91, 0.10);
+}
+
+.gov-elevate {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.gov-elevate:hover {
+  transform: translateY(-2px);
 }
 
 /* Tabular numbers for all financial & percentage data */

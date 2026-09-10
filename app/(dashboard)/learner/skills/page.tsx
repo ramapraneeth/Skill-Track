@@ -2,207 +2,304 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Search, Compass, Plus, CheckCircle2, ArrowRight } from 'lucide-react';
-import { PageHeader } from '@/components/ui/PageHeader';
-import { getLearner, saveLearner } from '@/lib/sidh-store';
+import {
+  CheckCircle2,
+  AlertCircle,
+  ArrowRight,
+  Sparkles,
+  Award,
+  Search,
+  BookOpen,
+} from 'lucide-react';
+import { sidhStore, StudentSkill } from '@/lib/sidh-store';
 
-interface SkillItem {
-  name: string;
-  category: string;
-  difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
-  description: string;
-  occupations: string[];
-  relatedCourseId: string;
-}
+export default function LearnerSkillsPage() {
+  const learner = sidhStore.getLearner();
+  const [selectedCategory, setSelectedCategory] = useState<string>('All');
+  const [search, setSearch] = useState<string>('');
 
-const DISCOVERY_SKILLS: SkillItem[] = [
-  {
-    name: 'Cloud Computing & AWS Architecture',
-    category: 'Cloud & Infrastructure',
-    difficulty: 'Intermediate',
-    description: 'EC2 instances, S3 storage, VPC subnets, and IAM role management on Amazon Web Services.',
-    occupations: ['Cloud Engineer', 'DevOps Specialist', 'Solutions Architect'],
-    relatedCourseId: 'crs-004',
-  },
-  {
-    name: 'Data Structures & Algorithms (DSA)',
-    category: 'Software & IT',
-    difficulty: 'Intermediate',
-    description: 'Trees, graph traversal, dynamic programming, and amortized complexity analysis in Java/C++.',
-    occupations: ['Software Engineer', 'Backend Developer', 'System Programmer'],
-    relatedCourseId: 'crs-002',
-  },
-  {
-    name: 'Microsoft Power BI & DAX',
-    category: 'Data Analytics',
-    difficulty: 'Beginner',
-    description: 'Relational data modeling, star schemas, time intelligence measures, and executive KPI reporting.',
-    occupations: ['Business Intelligence Analyst', 'Data Reporter', 'MIS Executive'],
-    relatedCourseId: 'crs-003',
-  },
-  {
-    name: 'Docker & Kubernetes Containerization',
-    category: 'Cloud & Infrastructure',
-    difficulty: 'Advanced',
-    description: 'Multi-stage container builds, pod manifests, ingress controller routing, and Helm charts.',
-    occupations: ['DevOps Engineer', 'Site Reliability Engineer', 'Cloud Architect'],
-    relatedCourseId: 'crs-004',
-  },
-  {
-    name: 'SOC Operations & SIEM Splunk',
-    category: 'Cybersecurity',
-    difficulty: 'Intermediate',
-    description: 'Log correlation, packet dissection with Wireshark, threat hunting, and incident triage.',
-    occupations: ['SOC Analyst (L1/L2)', 'Cyber Threat Hunter', 'Security Auditor'],
-    relatedCourseId: 'crs-005',
-  },
-  {
-    name: 'Full Stack React & Node Architecture',
-    category: 'Web Technologies',
-    difficulty: 'Intermediate',
-    description: 'State machines, serverless REST API endpoints, JWT authentication, and asynchronous persistence.',
-    occupations: ['Full Stack Developer', 'Frontend Engineer', 'Web Applications Lead'],
-    relatedCourseId: 'crs-001',
-  },
-];
+  const mySkills: (StudentSkill & { status: 'Assessed' | 'Needs Improvement' | 'Verified' })[] = [
+    {
+      name: 'JavaScript & Modern ES6+',
+      category: 'Programming Languages',
+      proficiencyLevel: 'Advanced',
+      proficiency: 90,
+      verified: true,
+      status: 'Assessed',
+    },
+    {
+      name: 'React.js & Component State',
+      category: 'Technical Skills',
+      proficiencyLevel: 'Advanced',
+      proficiency: 85,
+      verified: true,
+      status: 'Assessed',
+    },
+    {
+      name: 'Python Programming',
+      category: 'Programming Languages',
+      proficiencyLevel: 'Intermediate',
+      proficiency: 70,
+      verified: true,
+      status: 'Assessed',
+    },
+    {
+      name: 'Relational Databases & SQL',
+      category: 'Tools and Technologies',
+      proficiencyLevel: 'Intermediate',
+      proficiency: 60,
+      verified: true,
+      status: 'Needs Improvement',
+    },
+    {
+      name: 'Node.js & Express REST APIs',
+      category: 'Technical Skills',
+      proficiencyLevel: 'Intermediate',
+      proficiency: 65,
+      verified: true,
+      status: 'Assessed',
+    },
+    {
+      name: 'Cloud Architecture & AWS',
+      category: 'Tools and Technologies',
+      proficiencyLevel: 'Beginner',
+      proficiency: 40,
+      verified: false,
+      status: 'Needs Improvement',
+    },
+  ];
 
-export default function SkillDiscoveryPage() {
-  const [search, setSearch] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('ALL');
-  const [learner, setLearner] = useState(getLearner());
-  const [addedSkill, setAddedSkill] = useState<string | null>(null);
+  const skillGapMatrix = [
+    {
+      skill: 'Cloud Computing & AWS',
+      current: 'Beginner',
+      target: 'Intermediate',
+      gap: 'High',
+      gapColor: 'bg-rose-50 text-rose-700 border-rose-200',
+      recommendedCourse: 'Cloud Infrastructure & DevOps Engineering',
+      courseId: 'crs-002',
+    },
+    {
+      skill: 'Python Backend Systems',
+      current: 'Intermediate',
+      target: 'Advanced',
+      gap: 'Moderate',
+      gapColor: 'bg-amber-50 text-amber-700 border-amber-200',
+      recommendedCourse: 'Full Stack Web & Application Development',
+      courseId: 'crs-001',
+    },
+    {
+      skill: 'Relational Database SQL',
+      current: 'Intermediate',
+      target: 'Advanced',
+      gap: 'Moderate',
+      gapColor: 'bg-amber-50 text-amber-700 border-amber-200',
+      recommendedCourse: 'Relational Database Architecture & SQL Analytics',
+      courseId: 'crs-003',
+    },
+    {
+      skill: 'Containerization with Docker',
+      current: 'Beginner',
+      target: 'Intermediate',
+      gap: 'High',
+      gapColor: 'bg-rose-50 text-rose-700 border-rose-200',
+      recommendedCourse: 'Cloud Infrastructure & DevOps Engineering',
+      courseId: 'crs-002',
+    },
+  ];
 
-  const categories = ['ALL', 'Software & IT', 'Web Technologies', 'Data Analytics', 'Cloud & Infrastructure', 'Cybersecurity'];
+  const categories = ['All', 'Programming Languages', 'Technical Skills', 'Tools and Technologies'];
 
-  const filteredSkills = DISCOVERY_SKILLS.filter((s) => {
-    const matchesCat = selectedCategory === 'ALL' || s.category === selectedCategory;
-    const matchesSearch = s.name.toLowerCase().includes(search.toLowerCase()) || s.description.toLowerCase().includes(search.toLowerCase());
+  const filteredSkills = mySkills.filter((s) => {
+    const matchesCat = selectedCategory === 'All' || s.category === selectedCategory;
+    const matchesSearch = s.name.toLowerCase().includes(search.toLowerCase());
     return matchesCat && matchesSearch;
   });
 
-  const handleAddSkill = (skill: SkillItem) => {
-    const current = getLearner();
-    if (current.skills.some((sk) => sk.name.toLowerCase() === skill.name.toLowerCase())) {
-      return;
-    }
-    const updated = {
-      ...current,
-      skills: [
-        ...current.skills,
-        { name: skill.name, proficiency: 60, category: skill.category, verified: false },
-      ],
-    };
-    saveLearner(updated);
-    setLearner(updated);
-    setAddedSkill(skill.name);
-    setTimeout(() => setAddedSkill(null), 3000);
-  };
-
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Skill Discovery & Taxonomy"
-        subtitle="Explore national NSQF-aligned competency standards, market demand indices, and mapped industry occupations"
-        badge="Discovery Engine"
-      />
-
-      {addedSkill && (
-        <div className="p-3 bg-emerald-50 border border-emerald-300 text-emerald-900 rounded text-xs font-semibold flex items-center gap-2">
-          <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-          <span>Added "{addedSkill}" to your candidate profile. Take an assessment to verify proficiency.</span>
-        </div>
-      )}
-
-      {/* Filter and Search Bar */}
-      <div className="bg-white border border-[#CBD5E1] rounded-lg p-4 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3">
-        <div className="relative w-full sm:w-80">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search skills by name or keyword..."
-            className="w-full h-9 pl-9 pr-3 text-xs border border-[#CBD5E1] rounded bg-white text-[#0F172A]"
-          />
+    <div className="space-y-8">
+      {/* 1. PAGE HEADER */}
+      <div className="bg-white rounded-xl border border-slate-200 p-6 sm:p-8 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="space-y-1">
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+            My Skills
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-500">
+            Track your current capabilities, verify competencies through assessments, and identify priority areas for improvement.
+          </p>
         </div>
 
-        <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={`px-3 py-1.5 rounded text-xs font-semibold whitespace-nowrap transition-all ${
-                selectedCategory === cat
-                  ? 'bg-[#0B3B60] text-white'
-                  : 'bg-[#F1F5F9] text-[#475569] hover:bg-[#E2E8F0]'
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
+        <div className="flex items-center gap-3">
+          <Link
+            href="/learner/assessments"
+            className="px-4 py-2 text-xs font-semibold rounded-lg bg-blue-700 hover:bg-blue-800 text-white shadow-xs transition-colors"
+          >
+            Take Skill Assessment
+          </Link>
         </div>
       </div>
 
-      {/* Skills Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {filteredSkills.map((sk) => {
-          const isAdded = learner.skills.some((s) => s.name.toLowerCase() === sk.name.toLowerCase());
+      {/* 2. MY SKILLS INVENTORY */}
+      <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-xs space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h2 className="text-base font-bold text-slate-900">Current Skills Inventory</h2>
+            <p className="text-xs text-slate-500">Verified and logged capabilities associated with your candidate record</p>
+          </div>
 
-          return (
+          {/* Search & Category filter */}
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="relative">
+              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search skills..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-8 pr-3 py-1.5 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-blue-600 w-40 sm:w-48"
+              />
+            </div>
+
+            <div className="flex items-center gap-1 overflow-x-auto">
+              {categories.map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setSelectedCategory(cat)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
+                    selectedCategory === cat
+                      ? 'bg-blue-700 text-white'
+                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Compact Horizontal Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {filteredSkills.map((s, idx) => (
             <div
-              key={sk.name}
-              className="bg-white border border-[#CBD5E1] rounded-lg p-5 shadow-xs flex flex-col justify-between hover:border-[#0B3B60] transition-all space-y-3"
+              key={idx}
+              className="p-4 rounded-xl border border-slate-200 bg-white hover:border-slate-300 transition-all space-y-2.5"
             >
-              <div>
-                <div className="flex items-center justify-between text-xs mb-1">
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-[#F1F5F9] text-[#475569]">
-                    {sk.category}
-                  </span>
-                  <span className="text-[10px] font-bold text-[#0B3B60]">{sk.difficulty}</span>
+              <div className="flex items-center justify-between text-xs">
+                <div className="space-y-0.5">
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-slate-900 text-sm">{s.name}</span>
+                    {s.verified && (
+                      <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200">
+                        <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                        Verified
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-[11px] text-slate-400">{s.category}</span>
                 </div>
 
-                <h3 className="text-sm font-bold text-[#0F172A] leading-snug">{sk.name}</h3>
-                <p className="text-xs text-[#64748B] mt-1.5 leading-relaxed">{sk.description}</p>
-
-                <div className="mt-3 pt-3 border-t border-[#E2E8F0]">
-                  <span className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider block mb-1">
-                    Related Occupations:
+                <div className="text-right">
+                  <span
+                    className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded ${
+                      s.status === 'Assessed'
+                        ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                        : 'bg-amber-50 text-amber-700 border border-amber-200'
+                    }`}
+                  >
+                    {s.status}
                   </span>
-                  <div className="flex flex-wrap gap-1">
-                    {sk.occupations.map((occ) => (
-                      <span key={occ} className="text-[9px] px-1.5 py-0.5 rounded bg-[#F8FAFC] border border-[#E2E8F0] text-[#334E68]">
-                        {occ}
-                      </span>
-                    ))}
+                  <div className="font-mono text-xs font-bold text-slate-800 mt-1">
+                    {s.proficiency}%
                   </div>
                 </div>
               </div>
 
-              <div className="pt-3 border-t border-[#E2E8F0] flex items-center justify-between">
-                <Link
-                  href={`/learner/courses/${sk.relatedCourseId}`}
-                  className="text-xs font-bold text-[#0B3B60] hover:underline flex items-center gap-1"
-                >
-                  View Course <ArrowRight className="w-3 h-3" />
-                </Link>
+              {/* Progress bar */}
+              <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                <div
+                  className={`h-1.5 rounded-full ${
+                    (s.proficiency || 70) >= 80
+                      ? 'bg-emerald-600'
+                      : (s.proficiency || 70) >= 60
+                      ? 'bg-blue-600'
+                      : 'bg-amber-500'
+                  }`}
+                  style={{ width: `${s.proficiency || 70}%` }}
+                />
+              </div>
 
-                {isAdded ? (
-                  <span className="text-xs font-bold text-emerald-700 flex items-center gap-1">
-                    <CheckCircle2 className="w-3.5 h-3.5" /> In Profile
-                  </span>
-                ) : (
-                  <button
-                    onClick={() => handleAddSkill(sk)}
-                    className="px-3 py-1.5 rounded bg-[#0B3B60] hover:bg-[#002541] text-white font-bold text-xs flex items-center gap-1 transition-colors"
-                  >
-                    <Plus className="w-3 h-3" />
-                    <span>Add to Profile</span>
-                  </button>
-                )}
+              <div className="flex justify-between text-[11px] text-slate-500 pt-1">
+                <span>Proficiency: <strong className="text-slate-700 font-medium">{s.proficiencyLevel}</strong></span>
+                <Link
+                  href="/learner/assessments"
+                  className="text-blue-700 font-semibold hover:underline"
+                >
+                  Benchmark Test →
+                </Link>
               </div>
             </div>
-          );
-        })}
+          ))}
+        </div>
+      </div>
+
+      {/* 3. SKILL GAP ANALYSIS: Core Skill Track Intelligence */}
+      <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-xs space-y-4">
+        <div>
+          <div className="flex items-center gap-2">
+            <h2 className="text-base font-bold text-slate-900">Skill Gap Analysis</h2>
+            <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">
+              Target Role: Full Stack Developer
+            </span>
+          </div>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Diagnostic comparison between your verified competencies and required national industry benchmarks.
+          </p>
+        </div>
+
+        {/* Clean, spacious matrix table */}
+        <div className="overflow-x-auto border border-slate-200 rounded-xl">
+          <table className="w-full text-left text-xs">
+            <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase text-[10px] font-bold tracking-wider">
+              <tr>
+                <th className="py-3 px-4">Skill</th>
+                <th className="py-3 px-4">Current Level</th>
+                <th className="py-3 px-4">Target Benchmark</th>
+                <th className="py-3 px-4">Gap Severity</th>
+                <th className="py-3 px-4 text-right">Actionable Pathway</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 bg-white">
+              {skillGapMatrix.map((item, idx) => (
+                <tr key={idx} className="hover:bg-slate-50/50 transition-colors">
+                  <td className="py-3.5 px-4 font-bold text-slate-900">
+                    {item.skill}
+                  </td>
+                  <td className="py-3.5 px-4 text-slate-600 font-medium">
+                    {item.current}
+                  </td>
+                  <td className="py-3.5 px-4 text-blue-700 font-bold">
+                    {item.target}
+                  </td>
+                  <td className="py-3.5 px-4">
+                    <span className={`inline-block px-2 py-0.5 text-[10px] font-bold rounded border ${item.gapColor}`}>
+                      {item.gap} Gap
+                    </span>
+                  </td>
+                  <td className="py-3.5 px-4 text-right">
+                    <Link
+                      href={`/learner/courses/${item.courseId}`}
+                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-blue-700 hover:bg-blue-800 text-white font-semibold text-xs transition-colors shadow-2xs"
+                    >
+                      <span>Learn Now</span>
+                      <ArrowRight className="w-3 h-3" />
+                    </Link>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

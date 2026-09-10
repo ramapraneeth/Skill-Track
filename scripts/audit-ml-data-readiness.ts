@@ -44,8 +44,8 @@ async function auditDataReadiness() {
     select: { retention_status: true, milestone: true },
   });
 
-  const retainedCount = followups.filter((f) => f.retention_status === 'retained').length;
-  const attritedCount = followups.filter((f) => f.retention_status === 'attrited').length;
+  const retainedCount = followups.filter((f: any) => f.retention_status === 'retained').length;
+  const attritedCount = followups.filter((f: any) => f.retention_status === 'attrited').length;
 
   // ML Feasibility Thresholds (Standard Supervised Learning Requirements)
   const MIN_TRAINING_SAMPLES_CLASSIFICATION = 200;
@@ -94,7 +94,7 @@ async function auditDataReadiness() {
 
 ## 3. Geographic & Timestamp Coverage
 
-* **States Represented:** ${states.length} (${states.map((s) => s.state).join(', ') || 'None'})
+* **States Represented:** ${states.length} (${states.map((s: any) => s.state).join(', ') || 'None'})
 * **Timestamp Coverage:** Timestamps recorded on ${learnerCount} profiles.
 
 ---

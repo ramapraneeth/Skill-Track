@@ -37,10 +37,10 @@ export class JobMatchService {
       throw new NotFoundError('Candidate profile not found.');
     }
 
-    const appliedJobIds = new Set(learner.job_applications.map((app) => app.job_id));
+    const appliedJobIds = new Set(learner.job_applications.map((app: any) => app.job_id));
 
     // Map candidate skills
-    const learnerSkills: LearnerSkillInput[] = learner.learner_skills.map((s) => ({
+    const learnerSkills: LearnerSkillInput[] = learner.learner_skills.map((s: any) => ({
       skillId: s.skill_id,
       skillName: s.skill_name,
       proficiencyLevel: (s.proficiency_level as any) || 'basic',

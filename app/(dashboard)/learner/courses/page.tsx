@@ -2,199 +2,344 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { PageHeader } from '@/components/ui/PageHeader';
-import { StatusBadge } from '@/components/ui/StatusBadge';
+import {
+  BookOpen,
+  ArrowRight,
+  Search,
+  CheckCircle2,
+  Clock,
+  Award,
+} from 'lucide-react';
 import { sidhStore } from '@/lib/sidh-store';
 
-export default function StudentCoursesPage() {
-  const [activeTab, setActiveTab] = useState<'recommendations' | 'all'>('recommendations');
+interface CourseCardData {
+  id: string;
+  title: string;
+  skill: string;
+  shortDescription: string;
+  nsqfLevel: number;
+  totalHours: number;
+  progress?: number;
+  status: 'In Progress' | 'Completed' | 'Available';
+  bridgesGap?: string;
+}
+
+export default function LearnerCoursesPage() {
+  const [activeTab, setActiveTab] = useState<'all' | 'in-progress' | 'completed'>('all');
   const [search, setSearch] = useState('');
-  const [selectedSector, setSelectedSector] = useState('All');
 
-  const courses = sidhStore.getCourses();
-
-  const recommendedCourses = [
+  const courses: CourseCardData[] = [
     {
-      ...courses[0],
-      impactScore: 89,
-      placementRate: '76.5%',
-      avgSalary: '₹5.8 LPA',
-      placedCount: 620,
-      whyRecommended: 'Recommended because it directly bridges 3 high-priority missing skills for your target role "Full Stack Web Developer".',
+      id: 'crs-001',
+      title: 'Full Stack Web & Application Development',
+      skill: 'React.js & Node.js',
+      shortDescription: 'Modern responsive frontend architecture, enterprise REST API handlers, and PostgreSQL schema design.',
+      nsqfLevel: 5,
+      totalHours: 200,
+      progress: 68,
+      status: 'In Progress',
+      bridgesGap: 'Bridges Backend Architecture Gap',
     },
     {
-      ...courses[2] || courses[0],
-      id: 'crs-004',
-      title: 'DevOps Engineering, Docker Containers & Kubernetes',
-      sector: 'IT-ITeS & Cloud',
-      nsqfLevel: 7,
-      totalHours: 320,
-      impactScore: 92,
-      placementRate: '74.2%',
-      avgSalary: '₹7.8 LPA',
-      placedCount: 240,
-      whyRecommended: 'Recommended based on rapid national industry demand growth (+58%) and critical regional talent shortage.',
+      id: 'crs-002',
+      title: 'Cloud Infrastructure & DevOps Engineering',
+      skill: 'Docker & Kubernetes',
+      shortDescription: 'Containerization protocols, CI/CD pipeline automation, and production cloud orchestration.',
+      nsqfLevel: 6,
+      totalHours: 240,
+      progress: 24,
+      status: 'In Progress',
+      bridgesGap: 'Bridges Containerization Gap',
     },
     {
-      ...courses[1] || courses[0],
       id: 'crs-003',
-      title: 'Enterprise Business Intelligence & Power BI Data Modeling',
-      sector: 'BFSI & IT',
+      title: 'Relational Database Architecture & SQL Analytics',
+      skill: 'PostgreSQL & SQL',
+      shortDescription: 'Data normalization, ACID transactions, index optimization, and advanced SQL query performance.',
       nsqfLevel: 5,
       totalHours: 160,
-      impactScore: 87,
-      placementRate: '66.7%',
-      avgSalary: '₹5.4 LPA',
-      placedCount: 510,
-      whyRecommended: 'Recommended to expand secondary data analytics and reporting capabilities for business-facing engineering roles.',
+      progress: 100,
+      status: 'Completed',
+      bridgesGap: 'Bridges Database Optimization Gap',
+    },
+    {
+      id: 'crs-004',
+      title: 'Modern TypeScript & Enterprise Frontend Design',
+      skill: 'TypeScript & Next.js',
+      shortDescription: 'Advanced static typing, generic state machines, server components, and production performance tuning.',
+      nsqfLevel: 5,
+      totalHours: 120,
+      status: 'Available',
+      bridgesGap: 'Bridges Frontend Type-Safety Gap',
+    },
+    {
+      id: 'crs-005',
+      title: 'Distributed Systems & Microservices Architecture',
+      skill: 'System Design & APIs',
+      shortDescription: 'Asynchronous event streaming, caching topologies, API gateway patterns, and fault tolerance.',
+      nsqfLevel: 7,
+      totalHours: 180,
+      status: 'Available',
+      bridgesGap: 'Bridges System Architecture Gap',
     },
   ];
 
-  const displayedCourses = activeTab === 'recommendations' ? recommendedCourses : courses.map(c => ({
-    ...c,
-    impactScore: 85,
-    placementRate: '71.2%',
-    avgSalary: '₹5.2 LPA',
-    placedCount: 380,
-    whyRecommended: 'Standard accredited NSQF curriculum aligned with National Occupational Standards.',
-  }));
+  const activeHeroCourse = courses.find((c) => c.status === 'In Progress') || courses[0];
 
-  const filtered = displayedCourses.filter((c) => {
-    const matchesSearch = c.title.toLowerCase().includes(search.toLowerCase()) || c.sector.toLowerCase().includes(search.toLowerCase());
-    const matchesSector = selectedSector === 'All' || c.sector === selectedSector;
-    return matchesSearch && matchesSector;
+  const filteredCourses = courses.filter((c) => {
+    if (activeTab === 'in-progress' && c.status !== 'In Progress') return false;
+    if (activeTab === 'completed' && c.status !== 'Completed') return false;
+
+    const matchesSearch =
+      c.title.toLowerCase().includes(search.toLowerCase()) ||
+      c.skill.toLowerCase().includes(search.toLowerCase());
+
+    return matchesSearch;
   });
 
+  const recommendedCourses = courses.filter((c) => c.status === 'Available');
+
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Courses & Employment Outcome Intelligence"
-        subtitle="AI recommended curricula evaluated by employment conversion rates, industry relevance, and verified placement outcomes"
-        breadcrumbs={[
-          { label: 'Student Portal', href: '/learner/dashboard' },
-          { label: 'Courses' },
-        ]}
-      />
-
-      {/* Tabs Bar */}
-      <div className="flex border-b border-slate-200 dark:border-slate-800 gap-6">
-        <button
-          onClick={() => setActiveTab('recommendations')}
-          className={`pb-3 text-sm font-semibold border-b-2 transition-colors flex items-center gap-1.5 ${
-            activeTab === 'recommendations'
-              ? 'border-[#1D4ED8] text-[#1D4ED8] dark:text-blue-400'
-              : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
-          }`}
-        >
-          <span>⚡</span> AI Course Recommendations ({recommendedCourses.length})
-        </button>
-        <button
-          onClick={() => setActiveTab('all')}
-          className={`pb-3 text-sm font-semibold border-b-2 transition-colors ${
-            activeTab === 'all'
-              ? 'border-[#1D4ED8] text-[#1D4ED8] dark:text-blue-400'
-              : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
-          }`}
-        >
-          National Course Catalog ({courses.length})
-        </button>
-      </div>
-
-      {/* Filter Bar */}
-      <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3">
-        <div className="relative w-full sm:w-80">
-          <span className="absolute left-3 top-2.5 text-slate-400 text-xs">🔍</span>
-          <input
-            type="text"
-            placeholder="Search course title or sector..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg border border-slate-300 dark:border-slate-700 bg-transparent text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-[#1D4ED8]"
-          />
+    <div className="space-y-8">
+      {/* 1. PAGE HEADER */}
+      <div className="bg-white rounded-xl border border-slate-200 p-6 sm:p-8 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="space-y-1">
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+            Learning Catalogue
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-500">
+            Accredited curricula aligned with National Skills Qualification Framework (NSQF) standards.
+          </p>
         </div>
 
-        <select
-          value={selectedSector}
-          onChange={(e) => setSelectedSector(e.target.value)}
-          className="px-3 py-1.5 text-xs rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300"
-        >
-          <option value="All">All Industry Sectors</option>
-          <option value="IT-ITeS">IT-ITeS</option>
-          <option value="BFSI & IT">BFSI & IT</option>
-          <option value="Cybersecurity">Cybersecurity</option>
-        </select>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/learner/certificates"
+            className="px-4 py-2 rounded-lg border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-semibold flex items-center gap-1.5 transition-colors"
+          >
+            <Award className="w-3.5 h-3.5 text-slate-500" />
+            <span>Earned Credentials</span>
+          </Link>
+        </div>
       </div>
 
-      {/* Course Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {filtered.map((course) => (
-          <div
-            key={course.id}
-            className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-xs hover:shadow-md transition-all flex flex-col justify-between"
-          >
-            <div>
-              {/* Card Header with Impact Score */}
-              <div className="p-4 bg-slate-50/80 dark:bg-slate-950 border-b border-slate-100 dark:border-slate-800">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-950 px-2 py-0.5 rounded">
-                    {course.sector}
-                  </span>
-                  <div className="flex items-center gap-1">
-                    <span className="text-xs font-black text-[#1D4ED8] dark:text-blue-400">{course.impactScore}</span>
-                    <span className="text-[10px] text-slate-400 font-bold">/100 Impact</span>
-                  </div>
-                </div>
-                <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm leading-snug line-clamp-2">
-                  {course.title}
-                </h3>
-                <p className="text-[11px] text-slate-500 mt-1">NSQF Level {course.nsqfLevel} • {course.totalHours} Hours</p>
-              </div>
+      {/* 2. CONTINUE LEARNING: Active Course Hero */}
+      {activeHeroCourse && (
+        <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-xs space-y-4">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold uppercase tracking-wider text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-200">
+              Continue Learning
+            </span>
+            <span className="text-xs text-slate-500 font-medium">
+              NSQF Level {activeHeroCourse.nsqfLevel} • {activeHeroCourse.totalHours} Hours
+            </span>
+          </div>
 
-              {/* Recommendation Reason Banner */}
-              {course.whyRecommended && (
-                <div className="p-3 bg-blue-50/50 dark:bg-blue-950/40 border-b border-blue-100 dark:border-blue-900/60 text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed flex items-start gap-1.5">
-                  <span className="text-indigo-600 dark:text-indigo-400 shrink-0 mt-0.5 font-bold">💡</span>
-                  <span>{course.whyRecommended}</span>
-                </div>
-              )}
-
-              {/* Placement Outcomes Strip */}
-              <div className="p-4 space-y-3 text-xs">
-                <div className="grid grid-cols-2 gap-2 bg-slate-50 dark:bg-slate-950 p-2.5 rounded-lg border border-slate-100 dark:border-slate-800">
-                  <div>
-                    <span className="text-slate-400 block text-[10px] uppercase font-semibold">Placement Rate</span>
-                    <span className="font-bold text-emerald-700 dark:text-emerald-400 text-sm">{course.placementRate}</span>
-                  </div>
-                  <div>
-                    <span className="text-slate-400 block text-[10px] uppercase font-semibold">Avg Salary</span>
-                    <span className="font-bold text-slate-900 dark:text-slate-100 text-sm">{course.avgSalary}</span>
-                  </div>
-                </div>
-
-                <div className="flex justify-between text-[11px] text-slate-500">
-                  <span>Verified Placed:</span>
-                  <strong className="text-slate-800 dark:text-slate-200">{course.placedCount} Candidates</strong>
-                </div>
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+            <div className="space-y-1.5 max-w-2xl">
+              <h2 className="text-lg font-bold text-slate-900">
+                {activeHeroCourse.title}
+              </h2>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                {activeHeroCourse.shortDescription}
+              </p>
+              <div className="text-[11px] text-slate-500 flex items-center gap-2 pt-1">
+                <span>Skill Target: <strong className="text-slate-800">{activeHeroCourse.skill}</strong></span>
+                <span>•</span>
+                <span className="text-emerald-700 font-medium">{activeHeroCourse.bridgesGap}</span>
               </div>
             </div>
 
-            {/* Action Bar */}
-            <div className="p-4 bg-slate-50 dark:bg-slate-950 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+            <div className="w-full md:w-64 space-y-2.5 shrink-0">
+              <div className="flex justify-between text-xs font-semibold">
+                <span className="text-slate-600">Course Progress</span>
+                <span className="text-blue-700">{activeHeroCourse.progress}%</span>
+              </div>
+              <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                <div
+                  className="bg-blue-700 h-2 rounded-full"
+                  style={{ width: `${activeHeroCourse.progress}%` }}
+                />
+              </div>
               <Link
-                href={`/learner/courses/${course.id}`}
-                className="text-xs font-semibold text-slate-700 dark:text-slate-300 hover:text-[#1D4ED8]"
+                href={`/learner/courses/${activeHeroCourse.id}`}
+                className="w-full block text-center py-2 rounded-lg bg-blue-700 hover:bg-blue-800 text-white font-semibold text-xs transition-colors shadow-xs"
               >
-                View Syllabus →
-              </Link>
-              <Link
-                href={`/learner/courses/${course.id}`}
-                className="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-[#1D4ED8] hover:bg-blue-800 text-white shadow-2xs"
-              >
-                Placement Details
+                Resume Course
               </Link>
             </div>
           </div>
-        ))}
+        </div>
+      )}
+
+      {/* 3. MY LEARNING: Filterable Catalogue */}
+      <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-xs space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+          <div>
+            <h2 className="text-base font-bold text-slate-900">My Learning</h2>
+            <p className="text-xs text-slate-500">Your enrolled courses and ongoing pathways</p>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            {/* Search */}
+            <div className="relative">
+              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search courses..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-8 pr-3 py-1.5 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-blue-600 w-full sm:w-56"
+              />
+            </div>
+
+            {/* Tabs */}
+            <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg">
+              <button
+                onClick={() => setActiveTab('all')}
+                className={`px-3 py-1 rounded-md text-xs font-semibold transition-colors ${
+                  activeTab === 'all'
+                    ? 'bg-white text-slate-900 shadow-2xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                All ({courses.length})
+              </button>
+              <button
+                onClick={() => setActiveTab('in-progress')}
+                className={`px-3 py-1 rounded-md text-xs font-semibold transition-colors ${
+                  activeTab === 'in-progress'
+                    ? 'bg-white text-slate-900 shadow-2xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                In Progress ({courses.filter((c) => c.status === 'In Progress').length})
+              </button>
+              <button
+                onClick={() => setActiveTab('completed')}
+                className={`px-3 py-1 rounded-md text-xs font-semibold transition-colors ${
+                  activeTab === 'completed'
+                    ? 'bg-white text-slate-900 shadow-2xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                Completed ({courses.filter((c) => c.status === 'Completed').length})
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Course Cards Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {filteredCourses.map((c) => (
+            <div
+              key={c.id}
+              className="p-5 rounded-xl border border-slate-200 bg-white hover:border-slate-300 transition-all flex flex-col justify-between space-y-4"
+            >
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">
+                    NSQF Level {c.nsqfLevel}
+                  </span>
+                  <span
+                    className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                      c.status === 'Completed'
+                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                        : c.status === 'In Progress'
+                        ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                        : 'bg-slate-100 text-slate-600'
+                    }`}
+                  >
+                    {c.status}
+                  </span>
+                </div>
+
+                <h3 className="font-bold text-sm text-slate-900 leading-snug line-clamp-2">
+                  {c.title}
+                </h3>
+
+                <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
+                  {c.shortDescription}
+                </p>
+
+                <div className="text-[11px] text-slate-500 pt-1">
+                  <span>Skill: <strong className="text-slate-700 font-medium">{c.skill}</strong></span>
+                  <span className="block text-slate-400 mt-0.5">{c.totalHours} Notional Hours</span>
+                </div>
+              </div>
+
+              {/* Progress & Actions */}
+              <div className="space-y-3 pt-3 border-t border-slate-100">
+                {c.status !== 'Available' && (
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-[11px] font-semibold">
+                      <span className="text-slate-500">Progress</span>
+                      <span className="text-slate-800">{c.progress || 0}%</span>
+                    </div>
+                    <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                      <div
+                        className={`h-1.5 rounded-full ${
+                          c.status === 'Completed' ? 'bg-emerald-600' : 'bg-blue-700'
+                        }`}
+                        style={{ width: `${c.progress || 0}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] text-emerald-700 font-semibold line-clamp-1">
+                    {c.bridgesGap}
+                  </span>
+
+                  <Link
+                    href={`/learner/courses/${c.id}`}
+                    className="px-3.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs transition-colors shrink-0"
+                  >
+                    {c.status === 'In Progress' ? 'Continue' : c.status === 'Completed' ? 'Review' : 'View Course'}
+                  </Link>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 4. RECOMMENDED LEARNING: Directly Mapped to Skill Gaps */}
+      <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-xs space-y-4">
+        <div>
+          <h2 className="text-base font-bold text-slate-900">Recommended for Your Skill Gaps</h2>
+          <p className="text-xs text-slate-500">
+            Targeted curricula recommended based on your verified assessment diagnostics and career target.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {recommendedCourses.map((rc) => (
+            <div
+              key={rc.id}
+              className="p-4 rounded-xl border border-slate-200 bg-slate-50/40 flex items-start justify-between gap-4 text-xs"
+            >
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                    NSQF Level {rc.nsqfLevel}
+                  </span>
+                  <span className="text-[11px] text-slate-500">{rc.totalHours} Hours</span>
+                </div>
+                <h3 className="font-bold text-slate-900 text-sm">{rc.title}</h3>
+                <p className="text-[11px] text-emerald-700 font-medium">{rc.bridgesGap}</p>
+              </div>
+
+              <Link
+                href={`/learner/courses/${rc.id}`}
+                className="px-3.5 py-1.5 rounded-lg bg-blue-700 hover:bg-blue-800 text-white font-semibold text-xs transition-colors shrink-0"
+              >
+                Enroll Now
+              </Link>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
