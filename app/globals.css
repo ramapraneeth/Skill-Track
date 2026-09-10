@@ -3,20 +3,38 @@
 @tailwind utilities;
 
 :root {
-  --gov-blue: #0B3B60;
-  --gov-navy: #002541;
-  --gov-teal: #006876;
-  --gov-orange: #E65100;
-  --gov-border: #D1D9E2;
-  --gov-bg: #F8FAFC;
+  --gov-navy: #0B2D4F;
+  --gov-deep-blue: #12345B;
+  --gov-blue: #1769E0;
+  --gov-action: #1E6FF2;
+  --gov-light-blue: #EAF4FF;
+  --gov-orange: #F59E0B;
+  --gov-green: #16A34A;
+  --gov-border: #E4EDF7;
+  --gov-bg: #F5F9FD;
 }
 
 body {
   background-color: var(--gov-bg);
-  color: #102A43;
-  font-family: 'Public Sans', system-ui, -apple-system, sans-serif;
+  color: #0B2D4F;
+  font-family: 'Inter', 'Manrope', system-ui, -apple-system, sans-serif;
   font-feature-settings: 'tnum' on, 'lnum' on;
   -webkit-font-smoothing: antialiased;
+}
+
+.gov-card-shadow {
+  box-shadow: 0 4px 20px rgba(18, 52, 91, 0.06);
+}
+
+.gov-card-shadow:hover {
+  box-shadow: 0 8px 28px rgba(18, 52, 91, 0.10);
+}
+
+.gov-elevate {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.gov-elevate:hover {
+  transform: translateY(-2px);
 }
 
 /* Tabular numbers for all financial & percentage data */

@@ -10,7 +10,7 @@ interface PortalLayoutProps {
 
 export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, forcedRole }) => {
   return (
-    <div className="min-h-screen flex flex-col bg-[#F8FAFC] dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors">
+    <div className="min-h-screen flex flex-col bg-[#F5F9FD] text-[#0B2D4F]">
       {/* Top Navbar on EVERY Page - Strict ZERO Sidebar layout */}
       <TopNavbar forcedRole={forcedRole} />
 
